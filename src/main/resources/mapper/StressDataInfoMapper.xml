@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.akxy.mapper.StressDataInfoMapper">
+    <resultMap id="BaseResultMap"
+               type="com.akxy.entity.StressDataInfo">
+        <id column="DEPTH" jdbcType="DECIMAL" property="depth"/>
+        <id column="P_INDEX" jdbcType="FLOAT" property="pIndex"/>
+        <result column="ACQUISITION_TIME" jdbcType="TIMESTAMP"
+                property="acquisitionTime"/>
+        <result column="MP_NAME" jdbcType="VARCHAR" property="mpName"/>
+        <result column="AREA_ID" jdbcType="DECIMAL" property="areaId"/>
+        <result column="P_VALUE" jdbcType="FLOAT" property="pValue"/>
+        <result column="X" jdbcType="FLOAT" property="x"/>
+        <result column="Y" jdbcType="FLOAT" property="y"/>
+        <result column="Z" jdbcType="FLOAT" property="z"/>
+        <result column="WARN_STATUS" jdbcType="DECIMAL"
+                property="warnStatus"/>
+        <result column="RED_VALUE" jdbcType="DECIMAL"
+                property="redValue"/>
+        <result column="YELLOW_VALUE" jdbcType="DECIMAL"
+                property="yellowValue"/>
+        <result column="DISTANCE" jdbcType="DECIMAL"
+                property="distance"/>
+        <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
+        <result column="MP_ID" jdbcType="DECIMAL" property="mpId"/>
+        <result column="DAY_INCREASE_INDEX" jdbcType="FLOAT"
+                property="dayIncreaseIndex"/>
+        <result column="ZS_INDEX" jdbcType="FLOAT" property="zsIndex"/>
+        <result column="ZF_INDEX" jdbcType="FLOAT" property="zfIndex"/>
+        <result column="SINGLE_INDEX" jdbcType="FLOAT"
+                property="singleIndex"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        DEPTH, P_INDEX, ACQUISITION_TIME, MP_NAME, AREA_ID,
+		P_VALUE, X, Y, Z,
+		WARN_STATUS,
+		RED_VALUE, YELLOW_VALUE, DISTANCE, MEMO,
+		MP_ID, DAY_INCREASE_INDEX, ZS_INDEX,
+		ZF_INDEX,
+		SINGLE_INDEX
+    </sql>
+
+    <!-- 将组装好的数据写入STRESS_DATAINFO -->
+    <insert id="writeToDataInfo"
+            parameterType="com.akxy.entity.StressDataInfo">
+        insert into STRESS_DATAINFO
+        (ACQUISITION_TIME, MP_NAME, AREA_ID, P_VALUE, X, Y, Z, WARN_STATUS, RED_VALUE, YELLOW_VALUE,
+         DISTANCE, DEPTH, MEMO, MP_ID)
+        values (#{acquisitionTime,jdbcType=TIMESTAMP},
+                #{mpName,jdbcType=VARCHAR},
+                #{areaId,jdbcType=DECIMAL},
+                #{pValue,jdbcType=FLOAT},
+                #{x,jdbcType=FLOAT},
+                #{y,jdbcType=FLOAT},
+                #{z,jdbcType=FLOAT},
+                #{warnStatus,jdbcType=DECIMAL},
+                #{redValue,jdbcType=DECIMAL},
+                #{yellowValue,jdbcType=DECIMAL},
+                #{distance,jdbcType=DECIMAL},
+                #{depth,jdbcType=DECIMAL},
+                #{memo,jdbcType=VARCHAR},
+                #{mpId,jdbcType=DECIMAL})
+    </insert>
+
+    <!-- 判断STRESS_DATAINFO是否已经写入过该数据 -->
+    <select id="judgeContain" resultType="java.lang.Integer">
+        SELECT "COUNT"(*)
+        FROM STRESS_DATAINFO
+        WHERE ACQUISITION_TIME = #{acquisitionTime,jdbcType=TIMESTAMP}
+          AND MP_ID = #{mpId,jdbcType=DECIMAL}
+          AND AREA_ID = #{areaId,jdbcType=DECIMAL}
+          AND ROWNUM &lt;= 2000
+        ORDER BY ACQUISITION_TIME DESC
+    </select>
+
+    <!-- 根据测点ID得到该测点出现时间的降序集合 -->
+    <select id="getPointTimeByID" resultType="java.util.Date">
+        SELECT DISTINCT ACQUISITION_TIME
+        FROM STRESS_DATAINFO
+        WHERE MP_ID = #{mpId,jdbcType=DECIMAL}
+          AND ROWNUM &lt;= 1000
+        ORDER BY ACQUISITION_TIME DESC
+    </select>
+
+    <!-- 批量删除 -->
+    <delete id="deleteDataInfos" parameterType="java.util.List">
+        DELETE FROM STRESS_DATAINFO WHERE
+        <foreach item="item" collection="list" index="index"
+                 separator="or">
+            (ACQUISITION_TIME=#{item.acquisitionTime,jdbcType
+            =
+            TIMESTAMP} AND AREA_ID=#{item.areaId,jdbcType = DECIMAL} AND MP_ID=
+            #{item.mpId,jdbcType= DECIMAL})
+        </foreach>
+    </delete>
+
+    <!-- 批量插入STRESS_DATAINFO数据 -->
+    <insert id="insertGroupDataInfo" parameterType="java.util.List">
+        <!-- 添加批量删除 -->
+        <!-- <foreach collection="list" item="item" index="index" separator="or">
+            delete from STRESS_DATAINFO WHRER ACQUISITION_TIME=#{item.acquisitionTime,jdbcType
+            = TIMESTAMP} AND AREA_ID=#{item.areaId,jdbcType = DECIMAL} AND MP_ID= #{item.mpId,jdbcType
+            = DECIMAL}; </foreach> -->
+        insert into STRESS_DATAINFO
+        (ACQUISITION_TIME,MP_NAME,AREA_ID,P_VALUE,X,Y,Z,WARN_STATUS,RED_VALUE,YELLOW_VALUE,
+        DISTANCE,DEPTH,MEMO,MP_ID)
+        <foreach collection="list" item="item" index="index" open="("
+                 separator="union" close=")">
+            SELECT
+            #{item.acquisitionTime,
+            jdbcType =
+            TIMESTAMP}, #{item.mpName,
+			jdbcType = VARCHAR}, #{item.areaId,
+			jdbcType = DECIMAL}, #{item.pValue,
+			jdbcType = FLOAT}, #{item.x,
+			jdbcType = FLOAT}, #{item.y,
+			jdbcType = FLOAT}, #{item.z,
+			jdbcType =
+			FLOAT}, #{item.warnStatus,
+			jdbcType = DECIMAL}, #{item.redValue,
+			jdbcType = DECIMAL}, #{item.yellowValue,
+			jdbcType = DECIMAL},
+            #{item.distance,
+            jdbcType = DECIMAL}, #{item.depth,
+			jdbcType =
+			DECIMAL}, #{item.memo,
+			jdbcType = VARCHAR}, #{item.mpId,
+			jdbcType =
+			DECIMAL}
+            FROM
+            dual
+        </foreach>
+    </insert>
+
+    <!-- AreaId和MpId获取按时间降序的第一行 -->
+    <select id="getDataInfos" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM STRESS_DATAINFO WHERE AREA_ID=#{areaId,jdbcType = DECIMAL}
+        AND
+        MP_ID=#{mpId,jdbcType = DECIMAL} AND ROWNUM=1
+        ORDER BY ACQUISITION_TIME
+        DESC
+    </select>
+
+    <!-- 得到所有STRESS_DATAINFO信息 -->
+    <!-- <select id="getAllDataInfo" resultMap="BaseResultMap"> select <include
+        refid="Base_Column_List"/> from STRESS_DATAINFO </select> -->
+
+    <!-- 获取最新一天的StressDataInfo信息 -->
+    <select id="getDataInfoCache" resultMap="BaseResultMap">
+        <!-- WHERE ACQUISITION_TIME BETWEEN SYSDATE-1 AND SYSDATE -->
+        SELECT
+        DEPTH, P_INDEX, ACQUISITION_TIME, MP_NAME, AREA_ID,
+        P_VALUE, X, Y, Z,
+        WARN_STATUS,
+        RED_VALUE, YELLOW_VALUE, DISTANCE, MEMO,
+        MP_ID, DAY_INCREASE_INDEX, ZS_INDEX,
+        ZF_INDEX,
+        SINGLE_INDEX
+        FROM
+        (SELECT
+        DEPTH, P_INDEX, ACQUISITION_TIME, MP_NAME, AREA_ID,
+        P_VALUE, X, Y, Z,
+        WARN_STATUS,
+        RED_VALUE, YELLOW_VALUE, DISTANCE, MEMO,
+        MP_ID, DAY_INCREASE_INDEX, ZS_INDEX,
+        ZF_INDEX,
+        SINGLE_INDEX
+        FROM STRESS_DATAINFO ORDER BY ACQUISITION_TIME DESC)
+        WHERE ROWNUM &lt;= 1000
+    </select>
+
+    <!-- 判断是否存在主键 -->
+    <select id="findConditions" resultType="java.lang.String">
+        SELECT "TO_CHAR"(ACQUISITION_TIME, 'yyyy-mm-dd HH24:mi:ss')
+                   || '/' || MP_ID ||
+               '/' || AREA_ID
+        FROM STRESS_DATAINFO
+    </select>
+
+    <!-- 最新数据上传时间 -->
+    <!-- <select id="greatestNewTime" resultType="java.util.Date"> SELECT ACQUISITION_TIME
+        FROM STRESS_DATAINFO WHERE ROWNUM=1 ORDER BY ACQUISITION_TIME DESC </select> -->
+
+</mapper>

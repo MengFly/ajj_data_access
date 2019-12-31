@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.QuakeMapper">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.Quake">
+        <id column="ID" property="id" jdbcType="DECIMAL"/>
+        <result column="COLLECTIONTIME" property="collectiontime"
+                jdbcType="TIMESTAMP"/>
+        <result column="MINECODE" property="minecode"
+                jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaname"
+                jdbcType="VARCHAR"/>
+        <result column="CHCOUNT" property="chcount" jdbcType="DECIMAL"/>
+        <result column="SAMPLENGTH" property="samplength"
+                jdbcType="DECIMAL"/>
+        <result column="SAMPFREQ" property="sampfreq"
+                jdbcType="DECIMAL"/>
+        <result column="SENSORDIR" property="sensordir"
+                jdbcType="VARCHAR"/>
+        <result column="INSTALLWAY" property="installway"
+                jdbcType="VARCHAR"/>
+        <result column="SENSITIVITY" property="sensitivity"
+                jdbcType="FLOAT"/>
+        <result column="SENSORTYPE" property="sensortype"
+                jdbcType="VARCHAR"/>
+        <result column="X" property="x" jdbcType="FLOAT"/>
+        <result column="Y" property="y" jdbcType="FLOAT"/>
+        <result column="Z" property="z" jdbcType="FLOAT"/>
+        <result column="ENERGY" property="energy" jdbcType="FLOAT"/>
+        <result column="LEVEL" property="level" jdbcType="FLOAT"/>
+        <result column="POSDESC" property="posdesc" jdbcType="VARCHAR"/>
+        <result column="MAXSWING" property="maxswing" jdbcType="FLOAT"/>
+        <result column="AVGSWING" property="avgswing" jdbcType="FLOAT"/>
+        <result column="BASICFREQ" property="basicfreq"
+                jdbcType="FLOAT"/>
+        <result column="TRIGCH" property="trigch" jdbcType="VARCHAR"/>
+        <result column="EXCSTATUS" property="excstatus"
+                jdbcType="VARCHAR"/>
+        <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID, COLLECTIONTIME, MINECODE, AREANAME, CHCOUNT, SAMPLENGTH, SAMPFREQ,
+		SENSORDIR,
+		INSTALLWAY, SENSITIVITY, SENSORTYPE, X, Y, Z, ENERGY, LEVEL, POSDESC, MAXSWING,
+		AVGSWING,
+		BASICFREQ, TRIGCH, EXCSTATUS, MEMO
+    </sql>
+
+    <insert id="insert" parameterType="com.akxy.entity.Quake">
+        insert into QUAKE (ID, COLLECTIONTIME, MINECODE,
+                           AREANAME, CHCOUNT, SAMPLENGTH,
+                           SAMPFREQ, SENSORDIR, INSTALLWAY,
+                           SENSITIVITY, SENSORTYPE, X,
+                           Y, Z, ENERGY, LEVEL,
+                           POSDESC, MAXSWING, AVGSWING,
+                           BASICFREQ, TRIGCH, EXCSTATUS,
+                           MEMO)
+        values (#{id,jdbcType=DECIMAL}, #{collectiontime,jdbcType=TIMESTAMP},
+                #{minecode,jdbcType=VARCHAR},
+                #{areaname,jdbcType=VARCHAR}, #{chcount,jdbcType=DECIMAL}, #{samplength,jdbcType=DECIMAL},
+                #{sampfreq,jdbcType=DECIMAL}, #{sensordir,jdbcType=VARCHAR},
+                #{installway,jdbcType=VARCHAR},
+                #{sensitivity,jdbcType=FLOAT}, #{sensortype,jdbcType=VARCHAR}, #{x,jdbcType=DECIMAL},
+                #{y,jdbcType=DECIMAL}, #{z,jdbcType=DECIMAL},
+                #{energy,jdbcType=FLOAT}, #{level,jdbcType=FLOAT},
+                #{posdesc,jdbcType=VARCHAR}, #{maxswing,jdbcType=FLOAT},
+                #{avgswing,jdbcType=FLOAT},
+                #{basicfreq,jdbcType=FLOAT}, #{trigch,jdbcType=VARCHAR}, #{excstatus,jdbcType=VARCHAR},
+                #{memo,jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateByPrimaryKey"
+            parameterType="com.akxy.entity.Quake">
+        update QUAKE
+        set COLLECTIONTIME = #{collectiontime,jdbcType=TIMESTAMP},
+            MINECODE       = #{minecode,jdbcType=VARCHAR},
+            AREANAME       = #{areaname,jdbcType=VARCHAR},
+            CHCOUNT        = #{chcount,jdbcType=DECIMAL},
+            SAMPLENGTH     = #{samplength,jdbcType=DECIMAL},
+            SAMPFREQ       = #{sampfreq,jdbcType=DECIMAL},
+            SENSORDIR      = #{sensordir,jdbcType=VARCHAR},
+            INSTALLWAY     = #{installway,jdbcType=VARCHAR},
+            SENSITIVITY    = #{sensitivity,jdbcType=FLOAT},
+            SENSORTYPE     = #{sensortype,jdbcType=VARCHAR},
+            X              = #{x,jdbcType=DECIMAL},
+            Y              = #{y,jdbcType=DECIMAL},
+            Z              = #{z,jdbcType=DECIMAL},
+            ENERGY         = #{energy,jdbcType=FLOAT},
+            LEVEL          = #{level,jdbcType=FLOAT},
+            POSDESC        = #{posdesc,jdbcType=VARCHAR},
+            MAXSWING       = #{maxswing,jdbcType=FLOAT},
+            AVGSWING       = #{avgswing,jdbcType=FLOAT},
+            BASICFREQ      = #{basicfreq,jdbcType=FLOAT},
+            TRIGCH         = #{trigch,jdbcType=VARCHAR},
+            EXCSTATUS      = #{excstatus,jdbcType=VARCHAR},
+            MEMO           = #{memo,jdbcType=VARCHAR}
+        where ID = #{id,jdbcType=DECIMAL}
+    </update>
+
+    <!-- 从中间库读取Quake数据 -->
+    <select id="readQuakeData" resultMap="BaseResultMap">
+        select *
+        from QUAKE where MINECODE = #{customDB,jdbcType=VARCHAR}
+        AND X <![CDATA[ <> ]]>
+        0 AND Y<![CDATA[ <> ]]>0
+        AND Z<![CDATA[ <> ]]>0
+        <!-- SELECT * FROM QUAKE WHERE (id,COLLECTIONTIME,MINECODE) IN (SELECT
+            "MAX"(id),COLLECTIONTIME,MINECODE FROM QUAKE GROUP BY COLLECTIONTIME,MINECODE)
+            AND MINECODE = #{customDB,jdbcType=VARCHAR} AND MEMO <![CDATA[ <> ]]> 'READ'
+            AND X <![CDATA[ <> ]]> 0 AND Y<![CDATA[ <> ]]>0 AND Z<![CDATA[ <> ]]>0 -->
+    </select>
+
+    <select id="findQuakesByMineCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM QUAKE
+        <where>
+            MINECODE = #{minecode,jdbcType=VARCHAR}
+        </where>
+    </select>
+
+    <update id="updateReadSign"
+            parameterType="com.akxy.entity.Quake">
+        update QUAKE
+        set ID          = #{id,jdbcType=DECIMAL},
+            MINECODE    = #{minecode,jdbcType=VARCHAR},
+            AREANAME    = #{areaname,jdbcType=VARCHAR},
+            CHCOUNT     = #{chcount,jdbcType=DECIMAL},
+            SAMPLENGTH  = #{samplength,jdbcType=DECIMAL},
+            SAMPFREQ    = #{sampfreq,jdbcType=DECIMAL},
+            SENSORDIR   = #{sensordir,jdbcType=VARCHAR},
+            INSTALLWAY  = #{installway,jdbcType=VARCHAR},
+            SENSITIVITY = #{sensitivity,jdbcType=FLOAT},
+            SENSORTYPE  = #{sensortype,jdbcType=VARCHAR},
+            X           = #{x,jdbcType=FLOAT},
+            Y           = #{y,jdbcType=FLOAT},
+            Z           = #{z,jdbcType=FLOAT},
+            ENERGY      = #{energy,jdbcType=FLOAT},
+            "LEVEL"     = #{level,jdbcType=FLOAT},
+            POSDESC     = #{posdesc,jdbcType=VARCHAR},
+            MAXSWING    = #{maxswing,jdbcType=FLOAT},
+            AVGSWING    = #{avgswing,jdbcType=FLOAT},
+            BASICFREQ   = #{basicfreq,jdbcType=FLOAT},
+            TRIGCH      = #{trigch,jdbcType=VARCHAR},
+            EXCSTATUS   = #{excstatus,jdbcType=VARCHAR},
+            MEMO        = #{memo,jdbcType=VARCHAR}
+        where COLLECTIONTIME = #{collectiontime,jdbcType=TIMESTAMP}
+    </update>
+
+
+    <!-- 获取QUAKE表中所有AreaName -->
+    <select id="getAllAreaName" resultType="java.lang.String">
+        SELECT DISTINCT AREANAME
+        FROM QUAKE
+    </select>
+
+    <!-- 更新已读数据：添加已读标志 -->
+    <update id="updateReadData">
+        UPDATE QUAKE
+        SET COLLECTIONTIME=#{collectiontime,jdbcType=TIMESTAMP},
+            MINECODE=#{minecode,jdbcType=VARCHAR},
+            AREANAME=#{areaname,jdbcType=VARCHAR},
+            x=#{x,jdbcType=FLOAT},
+            y=#{y,jdbcType=FLOAT},
+            z=#{z,jdbcType=FLOAT},
+            ENERGY=#{energy,jdbcType=FLOAT},
+            "LEVEL"=#{level,jdbcType=FLOAT},
+            MEMO=#{memo,jdbcType=VARCHAR}
+        WHERE "ID" = #{id,jdbcType=DECIMAL}
+    </update>
+
+    <!-- 通过areaName获取最大能量值 -->
+    <select id="getEnergyByName" resultType="java.lang.Double">
+        SELECT ENERGY
+        FROM QUAKE
+        WHERE ROWNUM = 1
+          AND AREANAME = #{areaname,jdbcType=VARCHAR}
+        ORDER BY ENERGY DESC
+    </select>
+
+    <!-- 批量更新QUAKE表 -->
+    <update id="updateGroupData" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index"
+                 open="begin" close=";end;" separator=";">
+            update QUAKE q
+            set
+            q.COLLECTIONTIME=#{item.collectiontime,jdbcType=TIMESTAMP},
+            q.MINECODE=#{item.minecode,jdbcType=VARCHAR},
+            q.AREANAME=#{item.areaname,jdbcType=VARCHAR},
+            q.CHCOUNT =
+            #{item.chcount,jdbcType=DECIMAL},
+            q.SAMPLENGTH = #{item.samplength,jdbcType=DECIMAL},
+            q.SAMPFREQ = #{item.sampfreq,jdbcType=DECIMAL},
+            q.SENSORDIR = #{item.sensordir,jdbcType=VARCHAR},
+            q.INSTALLWAY = #{item.installway,jdbcType=VARCHAR},
+            q.SENSITIVITY = #{item.sensitivity,jdbcType=FLOAT},
+            q.SENSORTYPE = #{item.sensortype,jdbcType=VARCHAR},
+            q.x=#{item.x,jdbcType=FLOAT},
+            q.y=#{item.y,jdbcType=FLOAT},
+            q.z=#{item.z,jdbcType=FLOAT},
+            q.ENERGY=#{item.energy,jdbcType=FLOAT},
+            q."LEVEL"=#{item.level,jdbcType=FLOAT},
+            q.POSDESC =
+            #{item.posdesc,jdbcType=VARCHAR},
+            q.MAXSWING = #{item.maxswing,jdbcType=FLOAT},
+            q.AVGSWING = #{item.avgswing,jdbcType=FLOAT},
+            q.BASICFREQ = #{item.basicfreq,jdbcType=FLOAT},
+            q.TRIGCH = #{item.trigch,jdbcType=VARCHAR},
+            q.EXCSTATUS = #{item.excstatus,jdbcType=VARCHAR},
+            q.MEMO=#{item.memo,jdbcType=VARCHAR}
+            WHERE
+            q."ID"=#{item.id,jdbcType=DECIMAL}
+        </foreach>
+    </update>
+
+    <!-- 更新QUAKE表读取状态 -->
+    <update id="updateReadStatus">
+        UPDATE QUAKE
+        SET MEMO = 'READ'
+        where MINECODE = #{customDB,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 批量删除 -->
+    <delete id="deleteGtoupData" parameterType="java.util.List">
+        DELETE FROM QUAKE WHERE "ID" in
+        <foreach item="item" collection="list" open="(" close=")"
+                 separator=",">
+            (#{item.id,jdbcType=DECIMAL})
+        </foreach>
+    </delete>
+    <delete id="deleteByTimeLessThan">
+        DELETE
+        FROM QUAKE
+        WHERE COLLECTIONTIME &gt; CAST(#{time} AS DATE);
+    </delete>
+
+    <select id="quakeCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM QUAKE
+    </select>
+
+</mapper>

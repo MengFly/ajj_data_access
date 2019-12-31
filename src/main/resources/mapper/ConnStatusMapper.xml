@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.ConnStatusMapper" >
+  <resultMap id="BaseResultMap" type="com.akxy.entity.ConnStatus" >
+    <result column="MINE_NAME" property="mineName" jdbcType="VARCHAR" />
+    <result column="MINE_CODE" property="mineCode" jdbcType="VARCHAR" />
+    <result column="TYPE" property="type" jdbcType="VARCHAR" />
+    <result column="CONN_STATUS" property="connStatus" jdbcType="VARCHAR" />
+    <result column="WARNING_DETAIL" property="warningDetail" jdbcType="VARCHAR" />
+    <result column="ACQUIRE_TIME" property="acquireTime" jdbcType="TIMESTAMP" />
+    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
+  </resultMap>
+  <insert id="insert" parameterType="com.akxy.entity.ConnStatus" >
+    insert into CONN_STATUS (MINE_NAME, MINE_CODE, TYPE, 
+      CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME, 
+      MEMO)
+    values (#{mineName,jdbcType=VARCHAR}, #{mineCode,jdbcType=VARCHAR}, #{type,jdbcType=DECIMAL}, 
+      #{connStatus,jdbcType=DECIMAL}, #{warningDetail,jdbcType=VARCHAR}, #{acquireTime,jdbcType=TIMESTAMP}, 
+      #{memo,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.akxy.entity.ConnStatus" >
+    insert into CONN_STATUS
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="mineName != null" >
+        MINE_NAME,
+      </if>
+      <if test="mineCode != null" >
+        MINE_CODE,
+      </if>
+      <if test="type != null" >
+        TYPE,
+      </if>
+      <if test="connStatus != null" >
+        CONN_STATUS,
+      </if>
+      <if test="warningDetail != null" >
+        WARNING_DETAIL,
+      </if>
+      <if test="acquireTime != null" >
+        ACQUIRE_TIME,
+      </if>
+      <if test="memo != null" >
+        MEMO,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="mineName != null" >
+        #{mineName,jdbcType=VARCHAR},
+      </if>
+      <if test="mineCode != null" >
+        #{mineCode,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=DECIMAL},
+      </if>
+      <if test="connStatus != null" >
+        #{connStatus,jdbcType=DECIMAL},
+      </if>
+      <if test="warningDetail != null" >
+        #{warningDetail,jdbcType=VARCHAR},
+      </if>
+      <if test="acquireTime != null" >
+        #{acquireTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="memo != null" >
+        #{memo,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  	<!-- 批量插入CONN_STATUS数据 -->
+	<insert id="insertGroupData" parameterType="java.util.List">
+		insert into CONN_STATUS (MINE_NAME, MINE_CODE, TYPE,
+		CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME,MEMO)
+		<foreach collection="list" item="item" index="index" open="("
+			separator="union" close=")">
+			SELECT
+			#{item.mineName,jdbcType=VARCHAR},
+			#{item.mineCode,jdbcType=VARCHAR},
+			#{item.type,jdbcType=VARCHAR}, 
+      		#{item.connStatus,jdbcType=VARCHAR},
+      		#{item.warningDetail,jdbcType=VARCHAR}, 
+      		#{item.acquireTime,jdbcType=TIMESTAMP}, 
+      		#{item.memo,jdbcType=VARCHAR}
+			FROM
+			dual
+		</foreach>
+	</insert>
+  
+</mapper>

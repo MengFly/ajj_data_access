@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.akxy.mapper.CurMineInfoMapper">
+	<resultMap id="BaseResultMap"
+		type="com.akxy.entity.CurMineInfo">
+		<result column="AREA_ID" jdbcType="DECIMAL" property="areaId" />
+		<result column="TYPE" jdbcType="DECIMAL" property="type" />
+		<result column="ACQUISITION_TIME" jdbcType="TIMESTAMP"
+			property="acquisitionTime" />
+		<result column="STRESS_VALUE" jdbcType="FLOAT"
+			property="stressValue" />
+		<result column="QUAKE_VALUE" jdbcType="FLOAT"
+			property="quakeValue" />
+		<result column="MEMO" jdbcType="VARCHAR" property="memo" />
+		<result column="MP_ID" jdbcType="DECIMAL" property="mpId" />
+	</resultMap>
+
+	<!-- 写入预警信息 -->
+	<insert id="writeToCurMine"
+		parameterType="com.akxy.entity.CurMineInfo">
+		insert into CURMINE_INFO
+		(AREA_ID,TYPE,ACQUISITION_TIME,STRESS_VALUE,QUAKE_VALUE,MEMO,MP_ID)
+		values
+		(#{areaId,jdbcType=DECIMAL},#{type,jdbcType=DECIMAL},#{acquisitionTime,jdbcType=TIMESTAMP},
+		#{stressValue,jdbcType=FLOAT},#{quakeValue,jdbcType=FLOAT},#{memo,jdbcType=VARCHAR},
+		#{mpId,jdbcType=DECIMAL})
+	</insert>
+
+	<!-- 依照areaId判断该数据是否已经存在 -->
+	<select id="judgeContain" resultType="java.lang.Integer">
+		select count(*) from CURMINE_INFO where AREA_ID=#{areaId,jdbcType=DECIMAL}
+		AND MP_ID=#{mpId,jdbcType=DECIMAL}
+	</select>
+
+	<!-- 更新已存在的数据 -->
+	<update id="updateCurMine">
+		update CURMINE_INFO set
+		TYPE=#{type,jdbcType=DECIMAL},
+		ACQUISITION_TIME=#{acquisitionTime,jdbcType=TIMESTAMP},
+		STRESS_VALUE=#{stressValue,jdbcType=FLOAT},
+		QUAKE_VALUE=#{quakeValue,jdbcType=FLOAT},
+		MEMO=#{memo,jdbcType=VARCHAR}
+		where AREA_ID=#{areaId,jdbcType=DECIMAL}
+	</update>
+
+	<!-- 遍历CURMINE_INFO表 -->
+	<select id="getAllCurMine" resultMap="BaseResultMap">
+		select AREA_ID,TYPE,ACQUISITION_TIME,STRESS_VALUE,QUAKE_VALUE,MEMO,MP_ID
+		from CURMINE_INFO
+	</select>
+
+</mapper>

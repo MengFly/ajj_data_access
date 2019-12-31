@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.PermissionModuleMapper" >
+  <resultMap id="BaseResultMap" type="com.akxy.entity.PermissionModule" >
+    <id column="PERM_ID" property="permId" jdbcType="DECIMAL" />
+    <result column="PERM_NAME" property="permName" jdbcType="VARCHAR" />
+    <result column="PERM_TYPE" property="permType" jdbcType="VARCHAR" />
+    <result column="SEQUENCE" property="sequence" jdbcType="DECIMAL" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
+    <result column="PARENT_ID" property="parentId" jdbcType="DECIMAL" />
+    <result column="LEVEL" property="level" jdbcType="VARCHAR" />
+    <result column="OPERATOR" property="operator" jdbcType="VARCHAR" />
+    <result column="OPERATER_IP" property="operaterIp" jdbcType="VARCHAR" />
+    <result column="OPERATER_TIME" property="operaterTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    PERM_ID, PERM_NAME, PERM_TYPE, SEQUENCE, STATUS, MEMO, PARENT_ID, LEVEL, OPERATOR, 
+    OPERATER_IP, OPERATER_TIME
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Short" >
+    select 
+    <include refid="Base_Column_List" />
+    from PERMISSION_MODULE
+    where PERM_ID = #{permId,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Short" >
+    delete from PERMISSION_MODULE
+    where PERM_ID = #{permId,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.akxy.entity.PermissionModule" >
+    insert into PERMISSION_MODULE (PERM_ID, PERM_NAME, PERM_TYPE, 
+      SEQUENCE, STATUS, MEMO, 
+      PARENT_ID, LEVEL, OPERATOR, 
+      OPERATER_IP, OPERATER_TIME)
+    values (#{permId,jdbcType=DECIMAL}, #{permName,jdbcType=VARCHAR}, #{permType,jdbcType=VARCHAR}, 
+      #{sequence,jdbcType=DECIMAL}, #{status,jdbcType=DECIMAL}, #{memo,jdbcType=VARCHAR}, 
+      #{parentId,jdbcType=DECIMAL}, #{level,jdbcType=VARCHAR}, #{operator,jdbcType=VARCHAR}, 
+      #{operaterIp,jdbcType=VARCHAR}, #{operaterTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.akxy.entity.PermissionModule" >
+    insert into PERMISSION_MODULE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="permId != null" >
+        PERM_ID,
+      </if>
+      <if test="permName != null" >
+        PERM_NAME,
+      </if>
+      <if test="permType != null" >
+        PERM_TYPE,
+      </if>
+      <if test="sequence != null" >
+        SEQUENCE,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="memo != null" >
+        MEMO,
+      </if>
+      <if test="parentId != null" >
+        PARENT_ID,
+      </if>
+      <if test="level != null" >
+        LEVEL,
+      </if>
+      <if test="operator != null" >
+        OPERATOR,
+      </if>
+      <if test="operaterIp != null" >
+        OPERATER_IP,
+      </if>
+      <if test="operaterTime != null" >
+        OPERATER_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="permId != null" >
+        #{permId,jdbcType=DECIMAL},
+      </if>
+      <if test="permName != null" >
+        #{permName,jdbcType=VARCHAR},
+      </if>
+      <if test="permType != null" >
+        #{permType,jdbcType=VARCHAR},
+      </if>
+      <if test="sequence != null" >
+        #{sequence,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="memo != null" >
+        #{memo,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null" >
+        #{parentId,jdbcType=DECIMAL},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null" >
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="operaterIp != null" >
+        #{operaterIp,jdbcType=VARCHAR},
+      </if>
+      <if test="operaterTime != null" >
+        #{operaterTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.akxy.entity.PermissionModule" >
+    update PERMISSION_MODULE
+    <set >
+      <if test="permName != null" >
+        PERM_NAME = #{permName,jdbcType=VARCHAR},
+      </if>
+      <if test="permType != null" >
+        PERM_TYPE = #{permType,jdbcType=VARCHAR},
+      </if>
+      <if test="sequence != null" >
+        SEQUENCE = #{sequence,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="memo != null" >
+        MEMO = #{memo,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null" >
+        PARENT_ID = #{parentId,jdbcType=DECIMAL},
+      </if>
+      <if test="level != null" >
+        LEVEL = #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="operator != null" >
+        OPERATOR = #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="operaterIp != null" >
+        OPERATER_IP = #{operaterIp,jdbcType=VARCHAR},
+      </if>
+      <if test="operaterTime != null" >
+        OPERATER_TIME = #{operaterTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where PERM_ID = #{permId,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.akxy.entity.PermissionModule" >
+    update PERMISSION_MODULE
+    set PERM_NAME = #{permName,jdbcType=VARCHAR},
+      PERM_TYPE = #{permType,jdbcType=VARCHAR},
+      SEQUENCE = #{sequence,jdbcType=DECIMAL},
+      STATUS = #{status,jdbcType=DECIMAL},
+      MEMO = #{memo,jdbcType=VARCHAR},
+      PARENT_ID = #{parentId,jdbcType=DECIMAL},
+      LEVEL = #{level,jdbcType=VARCHAR},
+      OPERATOR = #{operator,jdbcType=VARCHAR},
+      OPERATER_IP = #{operaterIp,jdbcType=VARCHAR},
+      OPERATER_TIME = #{operaterTime,jdbcType=TIMESTAMP}
+    where PERM_ID = #{permId,jdbcType=DECIMAL}
+  </update>
+</mapper>

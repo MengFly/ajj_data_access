@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.UserTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.akxy.entity.UserType" >
+    <id column="USER_TYPE_ID" property="userTypeId" jdbcType="DECIMAL" />
+    <result column="USER_TYPE_NAME" property="userTypeName" jdbcType="VARCHAR" />
+    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    USER_TYPE_ID, USER_TYPE_NAME, MEMO
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Short" >
+    select 
+    <include refid="Base_Column_List" />
+    from USER_TYPE
+    where USER_TYPE_ID = #{userTypeId,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Short" >
+    delete from USER_TYPE
+    where USER_TYPE_ID = #{userTypeId,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.akxy.entity.UserType" >
+    insert into USER_TYPE (USER_TYPE_ID, USER_TYPE_NAME, MEMO
+      )
+    values (#{userTypeId,jdbcType=DECIMAL}, #{userTypeName,jdbcType=VARCHAR}, #{memo,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.akxy.entity.UserType" >
+    insert into USER_TYPE
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userTypeId != null" >
+        USER_TYPE_ID,
+      </if>
+      <if test="userTypeName != null" >
+        USER_TYPE_NAME,
+      </if>
+      <if test="memo != null" >
+        MEMO,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userTypeId != null" >
+        #{userTypeId,jdbcType=DECIMAL},
+      </if>
+      <if test="userTypeName != null" >
+        #{userTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="memo != null" >
+        #{memo,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.akxy.entity.UserType" >
+    update USER_TYPE
+    <set >
+      <if test="userTypeName != null" >
+        USER_TYPE_NAME = #{userTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="memo != null" >
+        MEMO = #{memo,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where USER_TYPE_ID = #{userTypeId,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.akxy.entity.UserType" >
+    update USER_TYPE
+    set USER_TYPE_NAME = #{userTypeName,jdbcType=VARCHAR},
+      MEMO = #{memo,jdbcType=VARCHAR}
+    where USER_TYPE_ID = #{userTypeId,jdbcType=DECIMAL}
+  </update>
+</mapper>

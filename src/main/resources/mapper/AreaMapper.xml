@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.akxy.mapper.AreaMapper">
+	<resultMap id="BaseResultMap" type="com.akxy.entity.Area">
+		<result column="ID" jdbcType="DECIMAL" property="id" />
+		<result column="NAME" jdbcType="VARCHAR" property="name" />
+		<result column="POS_LIST" jdbcType="VARCHAR" property="posList" />
+		<result column="ISMONITOR" jdbcType="DECIMAL" property="ismonitor" />
+		<result column="MEMO" jdbcType="VARCHAR" property="memo" />
+		<result column="TYPE" jdbcType="VARCHAR" property="type" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		"ID","NAME",POS_LIST,ISMONITOR,"TYPE",MEMO
+	</sql>
+	
+	<!-- 根据中间库的数据中areaNames字段获取areaId -->
+	<select id="getAreaIdByAreaName" resultType="java.lang.Long">
+		select id from Area where name=#{name,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 向Area表中添加数据 -->
+	<insert id="insertData" parameterType="com.akxy.entity.Area">
+		INSERT INTO AREA (id,name,pos_list,ismonitor,memo,TYPE)
+		VALUES
+		(#{id,jdbcType=DECIMAL},#{name,jdbcType=VARCHAR},#{posList,jdbcType=VARCHAR},
+		#{ismonitor,jdbcType=DECIMAL},#{memo,jdbcType=VARCHAR},#{type,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 获取AreaId -->
+	<select id="getAllID" resultType="java.lang.Long">
+		SELECT ID FROM AREA ORDER BY "ID" DESC
+	</select>
+	
+	<!-- 根据AreaName判断是否存在改区域配置 -->
+	<select id="judgeContain" resultType="java.lang.Integer">
+		SELECT "COUNT"(*) FROM AREA WHERE "NAME"=#{areaName,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 获取Area列表 -->
+	<select id="getArea" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List"/> FROM AREA ORDER BY ID DESC
+	</select>
+	
+	<!-- 批量插入Area数据 -->
+	<insert id="insertGroupArea" parameterType="java.util.List">
+		insert into AREA (ID,NAME,POS_LIST,ISMONITOR,MEMO,TYPE)
+		<foreach collection="list" item="item" index="index" open="("
+			separator="union" close=")">
+			SELECT
+			#{item.id,jdbcType=DECIMAL},
+			#{item.name,jdbcType=VARCHAR},
+			#{item.posList,jdbcType=VARCHAR},
+			#{item.ismonitor,jdbcType=DECIMAL},
+			#{item.memo,jdbcType=VARCHAR},
+			#{item.type,jdbcType=VARCHAR}
+			FROM
+			dual
+		</foreach>
+	</insert>
+
+</mapper>

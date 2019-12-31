@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.akxy.mapper.HiMineInfoMapper">
+  <resultMap id="BaseResultMap" type="com.akxy.entity.HiMineInfo">
+    <id column="area_id" jdbcType="DECIMAL" property="areaId" />
+    <id column="type" jdbcType="DECIMAL" property="type" />
+    <id column="mp_id" jdbcType="DECIMAL" property="mpId" />
+    <result column="acquisition_time" jdbcType="TIMESTAMP" property="acquisitionTime" />
+    <result column="stress_value" jdbcType="FLOAT" property="stressValue" />
+    <result column="quake_value" jdbcType="FLOAT" property="quakeValue" />
+    <result column="memo" jdbcType="VARCHAR" property="memo" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    area_id, type, acquisition_time, stress_value, quake_value, memo,mp_id
+  </sql>
+  
+  <!-- 写入预警信息 -->
+  <insert id="writeToHiMine" parameterType="com.akxy.entity.HiMineInfo">
+  	insert into HIMINE_INFO (AREA_ID,TYPE,ACQUISITION_TIME,STRESS_VALUE,QUAKE_VALUE,MEMO,mp_id) values
+  	(#{areaId,jdbcType=DECIMAL},#{type,jdbcType=DECIMAL},#{acquisitionTime,jdbcType=TIMESTAMP},
+  	#{stressValue,jdbcType=FLOAT},#{quakeValue,jdbcType=FLOAT},#{memo,jdbcType=VARCHAR},
+  	#{mpId,jdbcType=DECIMAL})
+  </insert>
+  
+  <!-- 依照areaId判断该数据是否已经存在 -->
+  <select id="judgeContain" resultType="java.lang.Integer">
+  	select count(*) from HIMINE_INFO where AREA_ID=#{areaId,jdbcType=DECIMAL} AND
+  	 MP_ID=#{mpId,jdbcType=DECIMAL} AND TYPE=#{type,jdbcType=DECIMAL}
+  </select>
+  
+  <!-- 更新已存在的数据 -->
+  <update id="updateHiMine">
+  	update HIMINE_INFO set
+	  	ACQUISITION_TIME=#{acquisitionTime,jdbcType=TIMESTAMP},
+	  	STRESS_VALUE=#{stressValue,jdbcType=FLOAT},
+	  	QUAKE_VALUE=#{quakeValue,jdbcType=FLOAT},
+	  	MEMO=#{memo,jdbcType=VARCHAR}
+	  where AREA_ID=#{areaId,jdbcType=DECIMAL} AND TYPE=#{type,jdbcType=DECIMAL} AND
+	  MP_ID=#{mpId,jdbcType=DECIMAL} 
+  </update>
+
+	<!-- 批量插入insertGroupHi -->
+	<insert id="insertGroupHi" parameterType="java.util.List">
+		insert into HIMINE_INFO (MP_ID,AREA_ID,TYPE,ACQUISITION_TIME,STRESS_VALUE,QUAKE_VALUE,MEMO)
+		<foreach collection="list" item="item" index="index" open="("
+			separator="union" close=")">
+			SELECT 
+			#{item.mpId,jdbcType=DECIMAL},
+			#{item.areaId,jdbcType=DECIMAL},
+			#{item.type,jdbcType=DECIMAL},
+			#{item.acquisitionTime,jdbcType=TIMESTAMP},
+			#{item.stressValue,jdbcType=FLOAT},
+			#{item.quakeValue,jdbcType=FLOAT},
+			#{item.memo,jdbcType=VARCHAR}
+			FROM
+			dual
+		</foreach>
+	</insert>
+  
+</mapper>

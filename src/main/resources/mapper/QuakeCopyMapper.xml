@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.QuakeCopyMapper" >
+  <resultMap id="BaseResultMap" type="com.akxy.entity.QuakeCopy" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="COLLECTIONTIME" property="collectiontime" jdbcType="TIMESTAMP" />
+    <result column="MINECODE" property="minecode" jdbcType="VARCHAR" />
+    <result column="AREANAME" property="areaname" jdbcType="VARCHAR" />
+    <result column="CHCOUNT" property="chcount" jdbcType="DECIMAL" />
+    <result column="SAMPLENGTH" property="samplength" jdbcType="DECIMAL" />
+    <result column="SAMPFREQ" property="sampfreq" jdbcType="DECIMAL" />
+    <result column="SENSORDIR" property="sensordir" jdbcType="VARCHAR" />
+    <result column="INSTALLWAY" property="installway" jdbcType="VARCHAR" />
+    <result column="SENSITIVITY" property="sensitivity" jdbcType="FLOAT" />
+    <result column="SENSORTYPE" property="sensortype" jdbcType="VARCHAR" />
+    <result column="X" property="x" jdbcType="FLOAT" />
+    <result column="Y" property="y" jdbcType="FLOAT" />
+    <result column="Z" property="z" jdbcType="FLOAT" />
+    <result column="ENERGY" property="energy" jdbcType="FLOAT" />
+    <result column="LEVEL" property="level" jdbcType="FLOAT" />
+    <result column="POSDESC" property="posdesc" jdbcType="VARCHAR" />
+    <result column="MAXSWING" property="maxswing" jdbcType="FLOAT" />
+    <result column="AVGSWING" property="avgswing" jdbcType="FLOAT" />
+    <result column="BASICFREQ" property="basicfreq" jdbcType="FLOAT" />
+    <result column="TRIGCH" property="trigch" jdbcType="VARCHAR" />
+    <result column="EXCSTATUS" property="excstatus" jdbcType="VARCHAR" />
+    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
+  </resultMap>
+  <insert id="copyQuake"
+		parameterType="java.util.List">
+		insert into QUAKECOPY
+		(COLLECTIONTIME,MINECODE,AREANAME,CHCOUNT,SAMPFREQ,SAMPLENGTH,
+		SENSORDIR,INSTALLWAY,SENSITIVITY,SENSORTYPE,X,Y,Z,ENERGY,
+		"LEVEL",POSDESC,MAXSWING,AVGSWING,BASICFREQ,TRIGCH,EXCSTATUS,MEMO)
+		<foreach collection="list" item="item" index="index" open="(" separator="union" close=")">
+			SELECT
+			<!-- #{item.id,jdbcType=INTEGER},  -->
+			#{item.collectiontime,jdbcType=TIMESTAMP}, 
+			#{item.minecode,jdbcType=VARCHAR}, 
+	        #{item.areaname,jdbcType=VARCHAR}, 
+	        #{item.chcount,jdbcType=INTEGER}, 
+	        #{item.samplength,jdbcType=INTEGER}, 
+	        #{item.sampfreq,jdbcType=INTEGER}, 
+	        #{item.sensordir,jdbcType=VARCHAR}, 
+	        #{item.installway,jdbcType=VARCHAR}, 
+	        #{item.sensitivity,jdbcType=FLOAT}, 
+	        #{item.sensortype,jdbcType=VARCHAR}, 
+	        #{item.x,jdbcType=FLOAT}, 
+	        #{item.y,jdbcType=FLOAT}, 
+	        #{item.z,jdbcType=DOUBLE}, 
+	        #{item.energy,jdbcType=FLOAT}, 
+	        #{item.level,jdbcType=FLOAT}, 
+	        #{item.posdesc,jdbcType=VARCHAR}, 
+	        #{item.maxswing,jdbcType=FLOAT}, 
+	        #{item.avgswing,jdbcType=FLOAT}, 
+	        #{item.basicfreq,jdbcType=FLOAT}, 
+	        #{item.trigch,jdbcType=VARCHAR}, 
+	        #{item.excstatus,jdbcType=VARCHAR}, 
+	        #{item.memo,jdbcType=VARCHAR}
+	        FROM
+			dual
+		</foreach>
+	</insert>
+  
+</mapper>

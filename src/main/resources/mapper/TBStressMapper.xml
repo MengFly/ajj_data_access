@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.akxy.mapper.TBStressMapper" >
+  <resultMap id="BaseResultMap" type="com.akxy.entity.TBStress" >
+    <result column="LOCALVALUE" property="localvalue" jdbcType="DECIMAL" />
+    <result column="LOCALTIME1" property="localtime1" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <insert id="insert" parameterType="com.akxy.entity.TBStress" >
+    insert into TB_STRESS (LOCALVALUE, LOCALTIME1)
+    values (#{localvalue,jdbcType=DECIMAL}, #{localtime1,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.akxy.entity.TBStress" >
+    insert into TB_STRESS
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="localvalue != null" >
+        LOCALVALUE,
+      </if>
+      <if test="localtime1 != null" >
+        LOCALTIME1,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="localvalue != null" >
+        #{localvalue,jdbcType=DECIMAL},
+      </if>
+      <if test="localtime1 != null" >
+        #{localtime1,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+</mapper>
