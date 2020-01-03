@@ -37,16 +37,14 @@ public class AutomateRun implements ApplicationRunner {
 
             boolean isHandleData = dataAccessController.readAndCalculate(childMines, globalStep++);
             if (!isHandleData) {
-                log.info("矿区没有数据要分析 SLEEP {} MMS", TIME_INTERVAL);
+                log.info("矿区没有数据需要分析 SLEEP {} MMS", TIME_INTERVAL);
                 try {
                     TimeUnit.MILLISECONDS.sleep(TIME_INTERVAL);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } else {
-                log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - startTime));
             }
-
+            log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - startTime));
         }
     }
 

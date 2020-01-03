@@ -5,31 +5,21 @@ import com.akxy.configuration.DynamicDataSourceContextHolder;
 import com.akxy.entity.*;
 import com.akxy.mapper.*;
 import com.akxy.service.IDataAccessService;
-import com.akxy.util.AVGList;
-import com.akxy.util.CopyUtils;
+import com.akxy.service.ILocalCacheService;
+import com.akxy.util.AreaUtil;
 import com.akxy.util.TaskUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 
 @Slf4j
-@SuppressWarnings("unchecked")
 @Service
 public class DataAccessServiceImpl implements IDataAccessService {
-
-    public Map<String, Object> mapCache = new ConcurrentHashMap<>();
-    private DataUtil dataUtil = new DataUtil();
-
     @Autowired
     private AreaMapper areaMapper;
     @Autowired
@@ -40,10 +30,6 @@ public class DataAccessServiceImpl implements IDataAccessService {
     private StressMeasurePointMapper stressMeasurePointMapper;
     @Autowired
     private StressDataInfoMapper stressDataInfoMapper;
-    @Autowired
-    private ConfigMapper configMapper;
-    @Autowired
-    private MineMapper mineMapper;
     @Autowired
     private ConnStatusMapper connStatusMapper;
     @Autowired
@@ -58,294 +44,292 @@ public class DataAccessServiceImpl implements IDataAccessService {
     private PosResultMapper posResultMapper;
     @Autowired
     private StressTopDataInfoMapper stressTopDataInfoMapper;
+    @Autowired
+    private HiMineInfoMapper hiMineInfoMapper;
+    @Autowired
+    private ConfigMapper configMapper;
+
+    @Autowired
+    private ILocalCacheService localCacheService;
+    @Autowired
+    DataUtil dataUtil;
+
 
     @Override
-    public Map<String, Object> getMapCache(String primaryDB, String customDB) {
-        try {
-            DynamicDataSourceContextHolder.setDataSource("1000"); // 安监局平台数据库
-            // 查询本矿区连接状态TOP信息
-            mapCache.put("CONNTOPSTATUS" + customDB, connTopStatusMapper.getTopStatusByMineCode(customDB));
+    public void copyDBToLocal(String customDB, String mineName) {
+        List<Stress> listStress = localCacheService.getMidStressCache(customDB);
+        List<Quake> listQuakes = localCacheService.getMidQuakeCache(customDB);
 
-            DynamicDataSourceContextHolder.setDataSource(primaryDB);// 中间库数据库
-            mapCache.put("STRESS" + customDB, stressMapper.readStressData(customDB));// 1000 条应力数据
-            mapCache.put("QUAKE" + customDB, quakeMapper.readQuakeData(customDB)); // 1000 条微震信息
-            mapCache.put("MINE" + customDB, mineMapper.listMines(customDB));// 本矿区信息
-            mapCache.put("AREANAME" + customDB, stressMapper.getAllAreaName(customDB));// 应力数据中包含的工作面信息
-            mapCache.put("PSIGN" + customDB, stressMapper.getPointSignList(customDB)); // 应力测点信息
-            DynamicDataSourceContextHolder.restoreDataSource();
-
-            DynamicDataSourceContextHolder.setDataSource(customDB);// 子矿区数据库
-            mapCache.put("AREA" + customDB, areaMapper.getArea());// 所有工作面信息
-            mapCache.put("STRDATA" + customDB, stressDataInfoMapper.getDataInfoCache());// 应力数据的最近1000条数据
-            mapCache.put("POINT" + customDB, stressMeasurePointMapper.getAllPoint());// 所有测点信息
-            mapCache.put("CURMINE" + customDB, curMineInfoMapper.getAllCurMine());//
-            DynamicDataSourceContextHolder.restoreDataSource();
-        } catch (Exception e) {
-            log.error("MAPCACHE EXCEPTION=>{},{}", customDB, e);
-        }
-        return mapCache;
-    }
-
-    @Override
-    public void copyDBToLocal(String customDB) {
-        List<Stress> listStress = (List<Stress>) mapCache.get("STRESS" + customDB);
-        List<Quake> listQuakes = (List<Quake>) mapCache.get("QUAKE" + customDB);
-
-        if (!CollectionUtils.isEmpty(listStress)) {
-            log.info(">> [{}] 开始拷贝应力数据", customDB);
+        if (!listStress.isEmpty()) {
+            log.info(">> [{}-{}] 开始拷贝应力数据", customDB, mineName);
             TaskUtil.getInstance().splitTaskExec(listStress, 500, (stresses, i) -> {
                 DynamicDataSourceContextHolder.setDataSource("copy");
                 stressCopyMapper.copyStress(stresses);
             });
-            log.info(">> [{}] 应力数据拷贝完成", customDB);
+            log.info(">> [{}-{}] 应力数据拷贝完成", customDB, mineName);
         }
 
-        if (!CollectionUtils.isEmpty(listQuakes)) {
-            log.info(">> [{}] 开始拷贝微震数据", customDB);
+        if (!listQuakes.isEmpty()) {
+            log.info(">> [{}-{}] 开始拷贝微震数据", customDB, mineName);
             TaskUtil.getInstance().splitTaskExec(listQuakes, 500, (quakes, i) -> {
                 DynamicDataSourceContextHolder.setDataSource("copy");
                 quakeCopyMapper.copyQuake(quakes);
             });
-            log.info(">> [{}] 微震数据拷贝完成", customDB);
+            log.info(">> [{}-{}] 微震数据拷贝完成", customDB, mineName);
         }
     }
 
     @Override
-    public void configArea(String primaryDB, String customDB) {
+    public void configArea(String primaryDB, String customDB, String mineName) {
         DynamicDataSourceContextHolder.setDataSource(customDB);
-        List<Area> existAreas = (List<Area>) mapCache.get("AREA" + customDB);
-        List<String> areaNames = (List<String>) mapCache.get("AREANAME" + customDB);
-        areaNames = areaNames.stream().distinct().collect(Collectors.toList());
-        List<Long> areaIds = new ArrayList<>();
-        try {
-            if (existAreas != null) {
-                List<Long> idsList = existAreas.stream().map(Area::getId).collect(Collectors.toList());
-                areaIds.addAll(idsList);
-            }
-            if (existAreas == null) {
-                areaIds.add(0, Long.valueOf(customDB.substring(customDB.length() - 1, customDB.length()) + "000"));
-            }
-            Area area = new Area();
-            StringBuffer minSign = new StringBuffer();
-            minSign.append(customDB.substring(customDB.lastIndexOf("0") + 1, customDB.length()));
-            area.setId(Long.valueOf(minSign.append("000").toString()));
-            area.setName("全矿");
-            area.setPosList(" ");
-            area.setType("0");
-            area.setIsmonitor((short) 1);
-            area.setMemo("0");
-            if (!areaIds.contains(area.getId())) {
-                areaIds.add(0, area.getId());
-//				areaNames.add(area.getName());
+        List<Area> existAreas = localCacheService.getMineAreaCache(customDB); // 目前子矿区中的工作面列表
+        List<String> areaNames = localCacheService.getMidAreaNameCache(customDB).stream().distinct().collect(Collectors.toList());
+        List<Long> areaIds = existAreas.stream().map(Area::getId).collect(Collectors.toList());
+        int addedAreaCount = 0;
+        if (areaIds.isEmpty()) {
+            addedAreaCount++;
+            Area area = Area.newInstance(AreaUtil.getAllMineId(customDB), "全矿", "0", "0");
+            areaMapper.insertData(area);
+            areaIds.add(0, area.getId());
+        }
+        for (String areaName : areaNames) {
+            // 如果此工作面不存在于矿区数据库中才进行存储，id为（最大id+1）
+            boolean flag = existAreas.stream().anyMatch(a -> areaName.equals(a.getName()));
+            if (!flag) {
+                addedAreaCount++;
+                Area area = Area.newInstance(areaIds.get(0) + 1, areaName, "1", " ");
                 areaMapper.insertData(area);
+                areaIds.add(0, area.getId());
             }
-            areaNames.forEach(e -> {
-//				List<Area> areaTemp = existAreas.stream().filter(a -> e.equals(a.getName()))
-//						.collect(Collectors.toList());
-                boolean flag = existAreas.stream().anyMatch(a -> e.equals(a.getName()));
-                if (flag == false) {
-                    Area a = new Area();
-                    a.setId(areaIds.get(0) + 1);
-                    a.setName(e);
-                    a.setPosList(" ");
-                    a.setType("1");
-                    a.setIsmonitor((short) 1);
-                    a.setMemo(" ");
-                    areaIds.add(0, area.getId());
-                    areaMapper.insertData(a);
-                    areaIds.add(0, a.getId());
-                }
-            });
-            mapCache.put("AREA" + customDB, areaMapper.getArea());
-        } catch (Exception e2) {
-            log.error("{}exception=>{},\n,{}", customDB, existAreas, e2);
+        }
+        if (addedAreaCount > 0) {
+            log.info(">> [{}-{}] 新增工作面({})个", customDB, mineName, addedAreaCount);
+            // 由于新增了工作面，所以缓存中的工作面也要更新
+            localCacheService.resetMineAreaCache(customDB);
+        } else {
+            log.info(">> [{}-{}] 无新增工作面", customDB, mineName);
         }
     }
 
     @Override
-    public void readAndCalculateStress(String primaryDB, String customDB) {
-        DynamicDataSourceContextHolder.setDataSource(primaryDB);
-        List<Stress> listStress = (List<Stress>) mapCache.get("STRESS" + customDB);
-        log.info("STRESS COUNT=>{}", listStress.size());
-        if (CollectionUtils.isEmpty(listStress)) {
+    public void readAndCalculateStress(String primaryDB, String customDB, String mineName) {
+        List<Stress> listStress = localCacheService.getMidStressCache(customDB);
+        if (listStress.isEmpty()) {
             return;
         }
-        List<List<Stress>> result = AVGList.averageAssign(listStress, 1000);
-        final int RUNNER_COUNT = result.size();
-        for (int i = 0; i < RUNNER_COUNT; i++) {
+        log.info(">> [{}-{}] 开始处理应力数据({})条", customDB, mineName, listStress.size());
+        long startTime = System.currentTimeMillis();
+        List<StressMeasurePoint> stressMeasurePoints = localCacheService.getMinePointCache(customDB);
+        List<Area> areas = localCacheService.getMineAreaCache(customDB);
+        DynamicDataSourceContextHolder.setDataSource(customDB);
+        List<StressDataInfo> stressDataInfos = dataUtil.optionStress(customDB, areas, listStress, stressMeasurePoints);
+        if (!stressDataInfos.isEmpty()) {
             try {
-                DynamicDataSourceContextHolder.setDataSource(customDB);
-                dataUtil.optionStress(customDB, result.get(i), (List<String>) mapCache.get("POINT" + customDB));
-                writeToHiMine(primaryDB, customDB, result.get(i));
-                writeToCurMine(primaryDB, customDB, result.get(i));
+                stressDataInfoMapper.deleteDataInfos(stressDataInfos);// 先删除再新增，防止数据重复
+                stressDataInfoMapper.insertGroupDataInfo(stressDataInfos);
             } catch (Exception e) {
-                log.error("STRESS WRITER EXCEPTION=>{},{}", customDB, e);
-            } finally {
-                DynamicDataSourceContextHolder.setDataSource(primaryDB);
-                stressMapper.deleteGtoupData(result.get(i));// 删除，正式使用时释放
+                log.error("INSERT 主键重复=>{},{}", customDB, e);
             }
         }
+        stressMeasurePoints = localCacheService.getMinePointCache(customDB);
+        writeToHiMine(customDB, areas, stressMeasurePoints, listStress);
+        writeToCurMine(primaryDB, customDB, listStress);
+
+        DynamicDataSourceContextHolder.setDataSource(primaryDB);
+        stressMapper.deleteGtoupData(listStress);// 删除，正式使用时释放
+
+        // 上面已经存储完了应力信息
         try {
+            localCacheService.resetStressDataCache(customDB);
             DynamicDataSourceContextHolder.setDataSource(customDB);
-            List<StressDataInfo> stressDataInfos = stressDataInfoMapper.getDataInfoCache();
-            if (stressDataInfos.size() != 0) {
-                // STRESS_TOP_DATA_INFO
-                dataUtil.writeToTopByPoints(stressDataInfos, stressMeasurePointMapper.getAllPoint(), customDB);
+            List<StressDataInfo> nowStressDataInfos = localCacheService.getStressDataCache(customDB);
+            if (nowStressDataInfos.size() != 0) {
+                List<StressTopDataInfo> stressTopDataInfos = stressTopDataInfoMapper.stressTopDataInfos();
+                dataUtil.writeToTopByPoints(nowStressDataInfos, stressTopDataInfos, stressMeasurePoints, customDB);
             }
         } catch (Exception e) {
             log.info("STRESS TOP WRITER EXCEPTION=>{},{}", customDB, e);
         }
-        mapCache.put("CURMINE" + customDB, curMineInfoMapper.getAllCurMine());
-        log.info("矿区{}应力处理完毕", customDB);
+        log.info(">> [{}-{}] 应力数据处理完毕，耗时 {} mms", customDB, mineName, (System.currentTimeMillis() - startTime));
         DynamicDataSourceContextHolder.restoreDataSource();
-//		}
     }
 
     @Override
-    public void readAndCalculateQuake(String primaryDB, String customDB) {
-        DynamicDataSourceContextHolder.setDataSource(customDB);
-        List<Area> areas = areaMapper.getArea();
-        DynamicDataSourceContextHolder.setDataSource(primaryDB);
-        List<List<Quake>> result = AVGList.averageAssign((List<Quake>) mapCache.get("QUAKE" + customDB), 200);
-//		List<Area> areas = (List<Area>) mapCache.get("AREA" + customDB);
-        final int RUNNER_COUNT = result.size();
-        for (int i = 0; i < RUNNER_COUNT; i++) {
+    public void readAndCalculateQuake(String primaryDB, String customDB, String mineName) {
+        List<Area> areas = localCacheService.getMineAreaCache(customDB);
+        List<Quake> quakeList = localCacheService.getMidQuakeCache(customDB);
+        TaskUtil.getInstance().splitTaskExec(quakeList, 200, (quakes, integer) -> {
             try {
-                dataUtil.optionQuake(areas, primaryDB, customDB, result.get(i));
+                List<PosResult> listINPosResult = new ArrayList<>();
+                DynamicDataSourceContextHolder.setDataSource(customDB);
+                String quakeWarnConfig = configMapper.getConfigInfo("WZ", "WARNING").getStrValue();
+                for (Quake quake : quakes) {
+                    PosResult posResult = dataUtil.assemblePosResult(areas, customDB, quake, quakeWarnConfig);
+                    listINPosResult.add(posResult);
+                }
+                if (!listINPosResult.isEmpty()) {
+                    posResultMapper.insertGroupData(listINPosResult);
+                }
+                DynamicDataSourceContextHolder.restoreDataSource();
             } catch (Exception e) {
-                log.error("微震写入异常=>{}", e);
+                log.error("微震写入异常=>{}", e.getMessage(), e);
             } finally {
                 DynamicDataSourceContextHolder.setDataSource(primaryDB);
-                quakeMapper.deleteGtoupData(result.get(i));
+                quakeMapper.deleteGtoupData(quakes);
             }
-        }
+        });
     }
 
     @Override
     public void writeToCurMine(String primaryDB, String customDB, List<Stress> listStress) {
-        dataUtil.optionCurMine(customDB, listStress, (List<StressMeasurePoint>) mapCache.get("POINT" + customDB));
-    }
-
-    @Override
-    public void writeToHiMine(String primaryDB, String customDB, List<Stress> stresses) {
-        DynamicDataSourceContextHolder.setDataSource(customDB);
-        List<Area> areas = areaMapper.getArea();
-        List<Stress> warnStress = new ArrayList<>();
-        for (Stress stressTemp : stresses) {
-            if (stressTemp.getValue() >= 9) {
-                warnStress.add(stressTemp);
+        List<CurMineInfo> curMineInfos = localCacheService.getCurMineCache(customDB);
+        List<Area> areas = localCacheService.getMineAreaCache(customDB);
+        List<StressMeasurePoint> measurePoints = localCacheService.getMinePointCache(customDB);
+        listStress.stream().filter(stress -> stress != null && stress.getValue() >= 9).forEach(stress -> {
+            CurMineInfo curMineInfo = dataUtil.getCurMineInfo(customDB, areas, measurePoints, stress);
+            DynamicDataSourceContextHolder.setDataSource(customDB);
+            boolean flag = curMineInfos.stream().anyMatch(
+                    e -> e.getAreaId().equals(curMineInfo.getAreaId()) && e.getMpId().equals(curMineInfo.getMpId()));
+            if (flag) {
+                curMineInfoMapper.updateCurMine(curMineInfo);
+            } else {
+                curMineInfoMapper.writeToCurMine(curMineInfo);
             }
-        }
-        List<StressMeasurePoint> stressMeasurePoints = stressMeasurePointMapper.getAllPoint();
-        dataUtil.optionHiMine(customDB, warnStress, stressMeasurePoints, areas);
+            DynamicDataSourceContextHolder.restoreDataSource();
+        });
+        localCacheService.resetCurMineCache(customDB);
     }
 
     @Override
-    public void updatePointTime(String primaryDB, String customDB) {
+    public void writeToHiMine(String customDB, List<Area> areas, List<StressMeasurePoint> stressMeasurePoints,
+                              List<Stress> stresses) {
+        DynamicDataSourceContextHolder.setDataSource(customDB);
+        // 筛选出要预警的stress信息
+        List<Stress> warnStress = stresses.stream()
+                .filter(stress -> stress != null && stress.getValue() >= 9).collect(Collectors.toList());
+
+        List<HiMineInfo> listHimineInfos = new ArrayList<>();
+        for (Stress stress : warnStress) {
+            HiMineInfo hiMineInfo = dataUtil.getHiMineInfo(customDB, stress, stressMeasurePoints, areas);
+            listHimineInfos.add(hiMineInfo);
+        }
+        if (!listHimineInfos.isEmpty()) {
+            DynamicDataSourceContextHolder.setDataSource(customDB);
+            hiMineInfoMapper.insertGroupHi(listHimineInfos);
+        }
+    }
+
+    @Override
+    public void updatePointTime(String primaryDB, String customDB, String mineName) {
         try {
             DynamicDataSourceContextHolder.setDataSource(customDB);
             List<StressMeasurePoint> listUPPoints = new ArrayList<>();
-            List<StressDataInfo> stressDataInfos = (List<StressDataInfo>) mapCache.get("STRDATA" + customDB);
-            List<StressMeasurePoint> stressMeasurePoints = stressMeasurePointMapper.getAllPoint();
-            for (int i = 0; i < stressMeasurePoints.size(); i++) {
-                StressMeasurePoint stressMeasurePoint = stressMeasurePoints.get(i);
-                try {
-                    DynamicDataSourceContextHolder.setDataSource(customDB);
-                    List<StressDataInfo> stressDataInfosList = stressDataInfos.stream()
-                            .filter(e -> e.getMpId() == (stressMeasurePoint.getId())).collect(Collectors.toList());
-                    Collections.sort(stressDataInfosList, Comparator.comparing(StressDataInfo::getAcquisitionTime));
-                    Collections.reverse(stressDataInfosList);
-                    List<Date> listTime = stressDataInfosList.stream().map(StressDataInfo::getAcquisitionTime)
-                            .collect(Collectors.toList());
-                    if (listTime.size() != 0) {
-                        stressMeasurePoint.setFromTime(listTime.get(listTime.size() - 1));
-                        stressMeasurePoint.setToTime(listTime.get(0));
-                        listUPPoints.add(stressMeasurePoint);
-                    }
-                } catch (Exception e) {
-                    log.info("UPDATE MEASUREPOINT TIME EXCEPTION=>{},{}", customDB, e);
-                } finally {
+            List<StressDataInfo> stressDataInfos = localCacheService.getStressDataCache(customDB);
+            List<StressMeasurePoint> stressMeasurePoints = localCacheService.getMinePointCache(customDB);
+            for (StressMeasurePoint stressMeasurePoint : stressMeasurePoints) {
+                List<StressDataInfo> stressDataInfosList = stressDataInfos.stream()
+                        .filter(e -> e.getMpId().equals(stressMeasurePoint.getId()))
+                        .sorted(Comparator.comparing(StressDataInfo::getAcquisitionTime)).collect(Collectors.toList());
+                Collections.reverse(stressDataInfosList);
+                if (stressDataInfos.size() != 0) {
+                    stressMeasurePoint.setFromTime(stressDataInfos.get(stressDataInfos.size() - 1).getAcquisitionTime());
+                    stressMeasurePoint.setToTime(stressDataInfos.get(0).getAcquisitionTime());
+                    listUPPoints.add(stressMeasurePoint);
                 }
             }
             if (listUPPoints.size() != 0) {
                 stressMeasurePointMapper.updateGroupData(listUPPoints);
+                // 更新了测点之后要更新缓存中的测点信息
+                localCacheService.resetMinePointCache(customDB);
             }
             DynamicDataSourceContextHolder.restoreDataSource();
         } catch (Exception e) {
-            log.info("{}  EXCEPTION=>{}", customDB, e);
+            log.info(">> [{}-{}]  EXCEPTION=>{}", customDB, mineName, e);
         }
     }
 
     @Override
-    public void writeToMeasurePoint(String primaryDB, String customDB) {
+    public void writeNotExistsMeasurePoint(String customDB, String mineName) {
+        List<Area> areas = localCacheService.getMineAreaCache(customDB);
+        List<StressMeasurePoint> stressMeasurePoints = localCacheService.getMinePointCache(customDB);
+        List<Stress> stresses = localCacheService.getMidStressCache(customDB);
         DynamicDataSourceContextHolder.setDataSource(customDB);
-        List<Area> areas = areaMapper.getArea();
-        List<StressMeasurePoint> stressMeasurePoints = stressMeasurePointMapper.getAllPoint();
-        dataUtil.getMeasurPointId(stressMeasurePoints, areas, (List<Stress>) mapCache.get("STRESS" + customDB),
-                primaryDB, customDB, (List<PointSign>) mapCache.get("PSIGN" + customDB));
+
+        // 找到没有录入在子矿区数据库中的测点
+        List<StressMeasurePoint> notExistsMeasurePoint = DataUtil.optionPoint(stressMeasurePoints, areas, stresses, customDB);
+        log.info(">> [{}-{}] 无新增测点", customDB, mineName);
+        if (notExistsMeasurePoint.isEmpty()) return;
+
+        // 对测点id进行排序，方便下面取id的最大值
+        List<Long> sortedMpIds = stressMeasurePoints.stream().map(StressMeasurePoint::getId)
+                .sorted().collect(Collectors.toList());
+        Collections.reverse(sortedMpIds);
+
+        List<String> signList = new ArrayList<>();
         DynamicDataSourceContextHolder.setDataSource(customDB);
-        mapCache.put("POINT" + customDB, stressMeasurePointMapper.getAllPoint());
+        notExistsMeasurePoint.forEach(point -> {
+            if (sortedMpIds.size() == 0) {
+                point.setId(Long.valueOf(customDB.substring(customDB.lastIndexOf("0") + 1) + "0001"));
+            } else {
+                point.setId(sortedMpIds.get(0) + 1);
+            }
+            if (!signList.contains(point.getTunnelName() + point.getDepth() + point.getDistance())) {
+                stressMeasurePointMapper.writeMeasurePoint(point);
+                signList.add(point.getTunnelName() + point.getDepth() + point.getDistance());
+            }
+            sortedMpIds.add(0, point.getId());
+        });
+        log.info(">> [{}-{}] 新增测点({})个", customDB, mineName, notExistsMeasurePoint.size());
+        localCacheService.resetMinePointCache(customDB);
     }
 
     @Override
-    public void writeToPlatform(String primaryDB, String customDB) {
-        List<Mine> mines = ((List<Mine>) mapCache.get("MINE" + customDB));
+    public void writeToPlatform(String primaryDB, String customDB, String mineName) {
+        List<Mine> mines = localCacheService.getMidMineCache(customDB);
         DynamicDataSourceContextHolder.setDataSource(customDB);
         List<ConnStatus> listConStatus = new ArrayList<>();
         List<ConnTopStatus> listINTopStatus = new ArrayList<>();
         List<ConnTopStatus> listUPTopStatus = new ArrayList<>();
-        hasSomeWrong:
+        DynamicDataSourceContextHolder.setDataSource(customDB);
+        Date stressTopNewDate = stressTopDataInfoMapper.findNewDate();
+        int stressTopTimeOut = Integer.parseInt(configMapper.getConfigInfo("TIME", "STRESSTIMEOUT").getStrValue());
+
+        Date quakeTopNewDate = posResultMapper.findNewDate();
+        int quakeTopTimeOut = Integer.parseInt(configMapper.getConfigInfo("TIME", "QUAKETIMEOUT").getStrValue());
         for (Mine mine : mines) {
-            ConnStatus stressConnStatu = dataUtil.getStressConStatus(customDB,
-                    (List<CurMineInfo>) mapCache.get("CURMINE" + customDB), mine);
-            ConnStatus quakeConnStatu = dataUtil.getQuakeConStatus(customDB,
-                    (List<CurMineInfo>) mapCache.get("CURMINE" + customDB), mine);
+            ConnStatus stressConnStatu = dataUtil.getStressConStatus(customDB,mine, stressTopNewDate, stressTopTimeOut);
+            ConnStatus quakeConnStatu = dataUtil.getQuakeConStatus(customDB,mine, quakeTopNewDate, quakeTopTimeOut);
             if (stressConnStatu != null) {
                 listConStatus.add(stressConnStatu);
                 // 把单个状态信息与Top表对比
                 ConnTopStatus stresssConnTopStatus = new ConnTopStatus();
-                try {
-                    CopyUtils.Copy(stressConnStatu, stresssConnTopStatus);
-                    List<ConnTopStatus> FilterList = ((List<ConnTopStatus>) mapCache.get("CONNTOPSTATUS" + customDB))
-                            .stream().filter(e -> e.getMineCode().equals(stresssConnTopStatus.getMineCode()))
-                            .collect(Collectors.toList());
-                    if (FilterList.size() == 0) {
-                        listINTopStatus.add(stresssConnTopStatus);
-                    } else {
-                        listUPTopStatus.add(stresssConnTopStatus);
-                    }
-                } catch (Exception e) {
-                    log.info("连接状态写入异常=>{}", e);
+                BeanUtils.copyProperties(stressConnStatu, stresssConnTopStatus);
+                boolean isContains = localCacheService.getMineConnTopStatusCache(customDB)
+                        .stream()
+                        .anyMatch(e -> e.getMineCode().equals(stresssConnTopStatus.getMineCode())
+                                && e.getType().equals(stresssConnTopStatus.getType()));
+                if (isContains) {
+                    listUPTopStatus.add(stresssConnTopStatus);
+                } else {
+                    listINTopStatus.add(stresssConnTopStatus);
                 }
-            } else {
-                continue hasSomeWrong;
             }
             if (quakeConnStatu != null) {
                 listConStatus.add(quakeConnStatu);
                 // 把单个状态信息与Top表对比
                 ConnTopStatus quakeConnTopStatus = new ConnTopStatus();
-                try {
-                    CopyUtils.Copy(quakeConnStatu, quakeConnTopStatus);
-                    List<String> listCondition = new ArrayList<>();
-                    listCondition.add(quakeConnTopStatus.getMineCode());
-                    List<ConnTopStatus> FilterList = ((List<ConnTopStatus>) mapCache.get("CONNTOPSTATUS" + customDB))
-                            .stream().filter((ConnTopStatus c) -> listCondition.contains(c.getMineCode()))
-                            .collect(Collectors.toList());
-                    FilterList = FilterList.stream().filter(e -> e.getType().equals(quakeConnTopStatus.getType()))
-                            .collect(Collectors.toList());
-                    if (FilterList.size() == 0) {
-                        listINTopStatus.add(quakeConnTopStatus);
-                    } else {
-                        listUPTopStatus.add(quakeConnTopStatus);
-                    }
-                } catch (Exception e) {
-                    log.info("连接状态写入异常=>{}", e);
+                BeanUtils.copyProperties(quakeConnStatu, quakeConnTopStatus);
+                boolean isContains = localCacheService.getMineConnTopStatusCache(customDB)
+                        .stream().anyMatch(c -> Objects.equals(quakeConnTopStatus.getMineCode(), c.getMineCode())
+                                && c.getType().equals(quakeConnTopStatus.getType()));
+                if (isContains) {
+                    listUPTopStatus.add(quakeConnTopStatus);
+                } else {
+                    listINTopStatus.add(quakeConnTopStatus);
                 }
-            } else {
-                continue hasSomeWrong;
             }
         }
-        log.info("FENGYUANSHIYE=>{}", listUPTopStatus);
+//        log.info("FENGYUANSHIYE=>{}", listUPTopStatus);
         DynamicDataSourceContextHolder.setDataSource("1000");
         // 连接历史表批量插入
         if (listConStatus.size() != 0) {
@@ -359,6 +343,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
                 connTopStatusMapper.updateConnTop(top);
             });
         }
+        localCacheService.resetMineConnTopStatusCache(customDB);
         DynamicDataSourceContextHolder.restoreDataSource();
     }
 

@@ -1,6 +1,9 @@
 package com.akxy.controller;
 
+import com.akxy.entity.Quake;
+import com.akxy.entity.Stress;
 import com.akxy.service.IDataAccessService;
+import com.akxy.service.ILocalCacheService;
 import com.akxy.util.CollectionUtil;
 import com.akxy.util.TaskUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -23,34 +26,39 @@ public class DataAccessController {
     @Autowired
     private IDataAccessService iDataAccessService;
 
+    @Autowired
+    private ILocalCacheService localCacheService;
+
     /**
      * 从中间库读取，计算Stress数据
      */
     public boolean readAndCalculate(List<String> childMines, long globalStep) {
         // 如果没有数据要进行分析
         boolean hasDataNeedAnalysis = !iDataAccessService.hasNeedAnalysisData();
-        log.info(">>>>>>>>>>>>>>[Step {}]DataAccess Service Start<<<<<<<<<<<<<<<", globalStep);
+        log.info(">>>>>>>>>>>>>> [Step {}] DataAccess Service Start<<<<<<<<<<<<<<<", globalStep);
         TaskUtil.getInstance().splitItemTaskExec(childMines, (customDB, integer) -> {
-
-            Map<String, Object> map = iDataAccessService.getMapCache(primaryDB, customDB);
-            Collection<?> stressData = (Collection<?>) map.get("STRESS" + customDB);
-            Collection<?> quakeData = (Collection<?>) map.get("QUAKE" + customDB);
-            if (CollectionUtils.isEmpty(stressData) && CollectionUtils.isEmpty(quakeData)) {
-                log.info(">> [{}] 无数据", customDB);
+            localCacheService.prepareMidCache(primaryDB, customDB);
+            String mineName = localCacheService.getMineName(customDB);
+            List<Stress> midStressCache = localCacheService.getMidStressCache(customDB);
+            List<Quake> midQuakeCache = localCacheService.getMidQuakeCache(customDB);
+            if (midStressCache.isEmpty() && midQuakeCache.isEmpty()) {
+                log.info(">> [{}-{}] 无数据", customDB, mineName);
             } else {
-                log.info(">> [{}] 查询到 -> 应力({})条，微震({})条", customDB,
-                        CollectionUtil.size(stressData), CollectionUtil.size(quakeData));
-                iDataAccessService.copyDBToLocal(customDB);
-                iDataAccessService.configArea(primaryDB, customDB);
-                iDataAccessService.writeToMeasurePoint(primaryDB, customDB);
-                iDataAccessService.readAndCalculateStress(primaryDB, customDB);
-                iDataAccessService.readAndCalculateQuake(primaryDB, customDB);
-                iDataAccessService.updatePointTime(primaryDB, customDB);
+                log.info(">> [{}-{}] 查询到 -> 应力({})条，微震({})条", customDB, mineName,
+                        midStressCache.size(), midQuakeCache.size());
+                iDataAccessService.copyDBToLocal(customDB, mineName);
+                iDataAccessService.configArea(primaryDB, customDB, mineName);
+                iDataAccessService.writeNotExistsMeasurePoint(customDB, mineName);
+                iDataAccessService.readAndCalculateStress(primaryDB, customDB, mineName);
+                iDataAccessService.readAndCalculateQuake(primaryDB, customDB, mineName);
+                iDataAccessService.updatePointTime(primaryDB, customDB, mineName);
             }
-            iDataAccessService.writeToPlatform(primaryDB, customDB);
+            iDataAccessService.writeToPlatform(primaryDB, customDB, mineName);
 
         });
-        log.info(">>>>>>>>>>>>>>[Step {}]DataAccess Service End<<<<<<<<<<<<<<<", globalStep);
+        // 中间库的缓存信息在所有矿区都分析结束的时候就没有用了，删除掉即可
+        localCacheService.restoreAllMidCache();
+        log.info(">>>>>>>>>>>>>> [Step {}] DataAccess Service End<<<<<<<<<<<<<<<", globalStep);
         return hasDataNeedAnalysis;
     }
 

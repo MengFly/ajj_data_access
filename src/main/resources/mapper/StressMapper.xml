@@ -175,7 +175,7 @@
 		<!-- 待完善 -->
 	</select>
 
-	<!-- 获取STRESS表中所有的AreaName -->
+	<!-- 获取STRESS和Quake表中所有的AreaName -->
 	<select id="getAllAreaName" resultType="java.lang.String">
 		SELECT AREANAME FROM (SELECT DISTINCT AREANAME FROM STRESS WHERE MINECODE
 		=#{mineCode,jdbcType=VARCHAR} ORDER BY 'COLLECTIONTIME' DESC) WHERE ROWNUM &lt;=1000

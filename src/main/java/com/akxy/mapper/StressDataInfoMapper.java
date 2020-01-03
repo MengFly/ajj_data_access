@@ -60,5 +60,4 @@ public interface StressDataInfoMapper {
      * 获取最新一天的StressDataInfo信息
      */
     List<StressDataInfo> getDataInfoCache();
-
 }

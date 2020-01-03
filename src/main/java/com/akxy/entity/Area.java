@@ -1,5 +1,12 @@
 package com.akxy.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
 public class Area {
     private Long id;
 
@@ -13,58 +20,16 @@ public class Area {
 
     private String type;
 
-    public Long getId() {
-        return id;
+    public static Area newInstance(Long id, String name, String type, String memo) {
+        Area area = new Area();
+        area.setId(id);
+        area.setName(name);
+        area.setPosList(" ");
+        area.setIsmonitor((short) 1);
+        area.setType(type);
+        area.setMemo(memo);
+        return area;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name == null ? null : name.trim();
-    }
-
-    public String getPosList() {
-        return posList;
-    }
-
-    public void setPosList(String posList) {
-        this.posList = posList == null ? null : posList.trim();
-    }
-
-    public Short getIsmonitor() {
-        return ismonitor;
-    }
-
-    public void setIsmonitor(Short ismonitor) {
-        this.ismonitor = ismonitor;
-    }
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo == null ? null : memo.trim();
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type == null ? null : type.trim();
-    }
-
-	@Override
-	public String toString() {
-		return "Area [id=" + id + ", name=" + name + ", posList=" + posList + ", ismonitor=" + ismonitor + ", memo="
-				+ memo + ", type=" + type + "]";
-	}
-    
 }
