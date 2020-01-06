@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AutomateRun implements ApplicationRunner {
     private long globalStep = 0;
-    static final long TIME_INTERVAL = 30000;
+    static final long TIME_INTERVAL = 60000;
 
     @Value("${custom.datasource.names}")
     public String customDBS;

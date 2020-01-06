@@ -34,7 +34,7 @@ public class DataAccessController {
      */
     public boolean readAndCalculate(List<String> childMines, long globalStep) {
         // 如果没有数据要进行分析
-        boolean hasDataNeedAnalysis = !iDataAccessService.hasNeedAnalysisData();
+        boolean hasDataNeedAnalysis = iDataAccessService.hasNeedAnalysisData();
         log.info(">>>>>>>>>>>>>> [Step {}] DataAccess Service Start<<<<<<<<<<<<<<<", globalStep);
         TaskUtil.getInstance().splitItemTaskExec(childMines, (customDB, integer) -> {
             localCacheService.prepareMidCache(primaryDB, customDB);

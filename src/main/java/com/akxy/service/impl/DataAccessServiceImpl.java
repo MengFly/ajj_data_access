@@ -297,8 +297,8 @@ public class DataAccessServiceImpl implements IDataAccessService {
         Date quakeTopNewDate = posResultMapper.findNewDate();
         int quakeTopTimeOut = Integer.parseInt(configMapper.getConfigInfo("TIME", "QUAKETIMEOUT").getStrValue());
         for (Mine mine : mines) {
-            ConnStatus stressConnStatu = dataUtil.getStressConStatus(customDB,mine, stressTopNewDate, stressTopTimeOut);
-            ConnStatus quakeConnStatu = dataUtil.getQuakeConStatus(customDB,mine, quakeTopNewDate, quakeTopTimeOut);
+            ConnStatus stressConnStatu = dataUtil.getStressConStatus(customDB, mine, stressTopNewDate, stressTopTimeOut);
+            ConnStatus quakeConnStatu = dataUtil.getQuakeConStatus(customDB, mine, quakeTopNewDate, quakeTopTimeOut);
             if (stressConnStatu != null) {
                 listConStatus.add(stressConnStatu);
                 // 把单个状态信息与Top表对比
@@ -343,6 +343,9 @@ public class DataAccessServiceImpl implements IDataAccessService {
                 connTopStatusMapper.updateConnTop(top);
             });
         }
+        log.info(">> [{}-{}] 连接状态更新完成,新增Top状态({})，更新Top状态({})",
+                customDB, mineName, listINTopStatus.size(),
+                listUPTopStatus.size());
         localCacheService.resetMineConnTopStatusCache(customDB);
         DynamicDataSourceContextHolder.restoreDataSource();
     }

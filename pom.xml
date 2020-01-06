@@ -10,9 +10,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.anke</groupId>
-    <artifactId>data-access-yankuang</artifactId>
+    <artifactId>data-access</artifactId>
     <version>1.0.0</version>
-    <name>data-access-yankuang</name>
+    <name>data-access</name>
     <description>安监局数据接入</description>
 
     <properties>
