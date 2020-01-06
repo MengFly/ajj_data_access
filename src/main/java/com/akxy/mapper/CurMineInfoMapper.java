@@ -12,28 +12,23 @@ public interface CurMineInfoMapper {
 	
 	/**
 	 * 遍历CURMINE_INFO表
-	 * @return
 	 */
-	public List<CurMineInfo> getAllCurMine();
+	List<CurMineInfo> getAllCurMine();
 	
     
 	/**
 	 * 写入预警信息
-	 * @param curMineInfo
 	 */
-	public void writeToCurMine(CurMineInfo curMineInfo);
+	void writeToCurMine(CurMineInfo curMineInfo);
 	
 	/**
 	 * 依照areaId判断该数据是否已经存在
-	 * @param areaId
-	 * @return
 	 */
-	public Integer judgeContain(@Param("areaId")Long areaId,@Param("mpId")Long mpId);
+	Integer judgeContain(@Param("areaId") Long areaId, @Param("mpId") Long mpId);
 	
 	/**
 	 * 更新已存在的数据
-	 * @param curMineInfo
 	 */
-	public void updateCurMine(CurMineInfo curMineInfo);
+	void updateCurMine(CurMineInfo curMineInfo);
 	
 }

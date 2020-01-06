@@ -98,15 +98,15 @@
 
     <!-- 从中间库读取Quake数据 -->
     <select id="readQuakeData" resultMap="BaseResultMap">
-        select *
-        from QUAKE where MINECODE = #{customDB,jdbcType=VARCHAR}
-        AND X <![CDATA[ <> ]]>
-        0 AND Y<![CDATA[ <> ]]>0
-        AND Z<![CDATA[ <> ]]>0
-        <!-- SELECT * FROM QUAKE WHERE (id,COLLECTIONTIME,MINECODE) IN (SELECT
-            "MAX"(id),COLLECTIONTIME,MINECODE FROM QUAKE GROUP BY COLLECTIONTIME,MINECODE)
-            AND MINECODE = #{customDB,jdbcType=VARCHAR} AND MEMO <![CDATA[ <> ]]> 'READ'
-            AND X <![CDATA[ <> ]]> 0 AND Y<![CDATA[ <> ]]>0 AND Z<![CDATA[ <> ]]>0 -->
+        SELECT *
+        FROM (SELECT *
+              FROM QUAKE
+              WHERE MINECODE = #{customDB,jdbcType=VARCHAR}
+                AND X <![CDATA[ <> ]]> 0
+                AND Y <![CDATA[ <> ]]> 0
+                AND Z <![CDATA[ <> ]]> 0
+              ORDER BY COLLECTIONTIME ASC)
+        WHERE ROWNUM &lt;= 1000
     </select>
 
     <select id="findQuakesByMineCode" resultMap="BaseResultMap">

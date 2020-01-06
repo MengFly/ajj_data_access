@@ -37,7 +37,7 @@ import java.util.Map;
  *
  */
 @Configuration // 该注解类似于spring配置文件
-public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+public class 	DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 	private final Logger LOGGER = LoggerFactory.getLogger(DynamicDataSourceRegister.class);
 	// 默认的数据源类型
 //	private static final String DEFAULT_DATASOUCE_TYPE = "org.apache.tomcat.jdbc.pool.DataSource";

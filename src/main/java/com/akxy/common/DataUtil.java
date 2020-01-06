@@ -1,54 +1,21 @@
 package com.akxy.common;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import com.akxy.util.AreaUtil;
-import com.akxy.util.ParseUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.akxy.configuration.DynamicDataSourceContextHolder;
-import com.akxy.entity.Area;
-import com.akxy.entity.AreaDataInfo;
-import com.akxy.entity.AreaTopDataInfo;
-import com.akxy.entity.ConnStatus;
-import com.akxy.entity.CurMineInfo;
-import com.akxy.entity.HiMineInfo;
-import com.akxy.entity.Mine;
-import com.akxy.entity.PointSign;
-import com.akxy.entity.PosResult;
-import com.akxy.entity.Quake;
-import com.akxy.entity.Stress;
-import com.akxy.entity.StressDataInfo;
-import com.akxy.entity.StressMeasurePoint;
-import com.akxy.entity.StressTopDataInfo;
-import com.akxy.mapper.AreaMapper;
+import com.akxy.entity.*;
 import com.akxy.mapper.AreaTopDataInfoMapper;
-import com.akxy.mapper.ConfigMapper;
-import com.akxy.mapper.CurMineInfoMapper;
-import com.akxy.mapper.HiMineInfoMapper;
-import com.akxy.mapper.MineMapper;
-//import com.akxy.mapper.MineMapper;
 import com.akxy.mapper.OrganMineMapper;
-import com.akxy.mapper.PosResultMapper;
-import com.akxy.mapper.QuakeMapper;
-import com.akxy.mapper.StressDataInfoMapper;
-import com.akxy.mapper.StressMapper;
 import com.akxy.mapper.StressMeasurePointMapper;
 import com.akxy.mapper.StressTopDataInfoMapper;
-import com.akxy.service.impl.DataAccessServiceImpl;
+import com.akxy.util.AreaUtil;
 import com.akxy.util.CopyUtils;
-
+import com.akxy.util.ParseUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 数据操作工具类
@@ -63,10 +30,6 @@ public class DataUtil {
     private StressMeasurePointMapper stressMeasurePointMapper;
     @Autowired
     private StressTopDataInfoMapper stressTopDataInfoMapper;
-    @Autowired
-    private PosResultMapper posResultMapper;
-    @Autowired
-    private ConfigMapper configMapper;
     @Autowired
     private OrganMineMapper organMineMapper;
     @Autowired

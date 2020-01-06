@@ -3,8 +3,6 @@ package com.akxy.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.fastjson.JSON;
-
 public class AVGList {
 
 	/**
@@ -36,18 +34,6 @@ public class AVGList {
 			}
 		}
 		return result;
-	}
-
-	public static void main(String[] args) {
-		List<Integer> source = new ArrayList<Integer>();
-		for (int i = 1; i < 101; i++) {
-			source.add(i);
-		}
-		List<List<Integer>> result = averageAssign(source, 10);
-		System.out.println("元素量："+result.size());
-		for (List<Integer> re : result) {
-			System.out.println(JSON.toJSONString(re));
-		}
 	}
 
 }

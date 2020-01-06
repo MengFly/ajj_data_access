@@ -22,13 +22,11 @@ public class CopyUtils {
         PropertyDescriptor[] destProperty = destBean.getPropertyDescriptors();
  
         try {
-            for (int i = 0; i < sourceProperty.length; i++) {
-                
-                for (int j = 0; j < destProperty.length; j++) {
-                    
-                    if (sourceProperty[i].getName().equals(destProperty[j].getName())  && sourceProperty[i].getPropertyType() == destProperty[j].getPropertyType()) {
+            for (PropertyDescriptor propertyDescriptor : sourceProperty) {
+                for (PropertyDescriptor descriptor : destProperty) {
+                    if (propertyDescriptor.getName().equals(descriptor.getName()) && propertyDescriptor.getPropertyType() == descriptor.getPropertyType()) {
                         // 调用source的getter方法和dest的setter方法
-                        destProperty[j].getWriteMethod().invoke(dest,sourceProperty[i].getReadMethod().invoke(source));
+                        descriptor.getWriteMethod().invoke(dest, propertyDescriptor.getReadMethod().invoke(source));
                         break;
                     }
                 }

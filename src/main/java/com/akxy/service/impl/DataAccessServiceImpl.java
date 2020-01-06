@@ -189,7 +189,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
             CurMineInfo curMineInfo = dataUtil.getCurMineInfo(customDB, areas, measurePoints, stress);
             DynamicDataSourceContextHolder.setDataSource(customDB);
             boolean flag = curMineInfos.stream().anyMatch(
-                    e -> e.getAreaId().equals(curMineInfo.getAreaId()) && e.getMpId().equals(curMineInfo.getMpId()));
+                    curMine -> curMine.getAreaId().equals(curMineInfo.getAreaId()) && curMine.getMpId().equals(curMineInfo.getMpId()));
             if (flag) {
                 curMineInfoMapper.updateCurMine(curMineInfo);
             } else {

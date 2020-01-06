@@ -4,17 +4,13 @@ import com.akxy.entity.Quake;
 import com.akxy.entity.Stress;
 import com.akxy.service.IDataAccessService;
 import com.akxy.service.ILocalCacheService;
-import com.akxy.util.CollectionUtil;
 import com.akxy.util.TaskUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
