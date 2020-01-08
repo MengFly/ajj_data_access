@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.akxy.mapper.CurMineInfoMapper">
-    <resultMap id="BaseResultMap"
-               type="com.akxy.entity.CurMineInfo">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.CurMineInfo">
         <result column="AREA_ID" jdbcType="DECIMAL" property="areaId"/>
         <result column="TYPE" jdbcType="DECIMAL" property="type"/>
         <result column="ACQUISITION_TIME" jdbcType="TIMESTAMP"
@@ -24,14 +23,6 @@
                 #{stressValue,jdbcType=FLOAT}, #{quakeValue,jdbcType=FLOAT}, #{memo,jdbcType=VARCHAR},
                 #{mpId,jdbcType=DECIMAL})
     </insert>
-
-    <!-- 依照areaId判断该数据是否已经存在 -->
-    <select id="judgeContain" resultType="java.lang.Integer">
-        select count(*)
-        from CURMINE_INFO
-        where AREA_ID = #{areaId,jdbcType=DECIMAL}
-          AND MP_ID = #{mpId,jdbcType=DECIMAL}
-    </select>
 
     <!-- 更新已存在的数据 -->
     <update id="updateCurMine">

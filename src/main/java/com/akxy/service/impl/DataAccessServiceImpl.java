@@ -136,7 +136,9 @@ public class DataAccessServiceImpl implements IDataAccessService {
         writeToCurMine(primaryDB, customDB, listStress);
 
         DynamicDataSourceContextHolder.setDataSource(primaryDB);
-        stressMapper.deleteGtoupData(listStress);// 删除，正式使用时释放
+        int deleteCountStress = stressMapper.deleteGroupData(listStress);
+        log.info(">> [{}-{}] 删除中间库应力数据({})条", customDB, mineName, deleteCountStress);
+
 
         // 上面已经存储完了应力信息
         try {
@@ -156,28 +158,32 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
     @Override
     public void readAndCalculateQuake(String primaryDB, String customDB, String mineName) {
+        List<Quake> quakes = localCacheService.getMidQuakeCache(customDB);
+        if (quakes.isEmpty()) {
+            return;
+        }
+        log.info(">> [{}-{}] 开始处理微震数据({})条", customDB, mineName, quakes.size());
         List<Area> areas = localCacheService.getMineAreaCache(customDB);
-        List<Quake> quakeList = localCacheService.getMidQuakeCache(customDB);
-        TaskUtil.getInstance().splitTaskExec(quakeList, 200, (quakes, integer) -> {
-            try {
-                List<PosResult> listINPosResult = new ArrayList<>();
-                DynamicDataSourceContextHolder.setDataSource(customDB);
-                String quakeWarnConfig = configMapper.getConfigInfo("WZ", "WARNING").getStrValue();
-                for (Quake quake : quakes) {
-                    PosResult posResult = dataUtil.assemblePosResult(areas, customDB, quake, quakeWarnConfig);
-                    listINPosResult.add(posResult);
-                }
-                if (!listINPosResult.isEmpty()) {
-                    posResultMapper.insertGroupData(listINPosResult);
-                }
-                DynamicDataSourceContextHolder.restoreDataSource();
-            } catch (Exception e) {
-                log.error("微震写入异常=>{}", e.getMessage(), e);
-            } finally {
-                DynamicDataSourceContextHolder.setDataSource(primaryDB);
-                quakeMapper.deleteGtoupData(quakes);
+        try {
+            List<PosResult> listINPosResult = new ArrayList<>();
+            DynamicDataSourceContextHolder.setDataSource(customDB);
+            String quakeWarnConfig = configMapper.getConfigInfo("WZ", "WARNING").getStrValue();
+            for (Quake quake : quakes) {
+                PosResult posResult = dataUtil.assemblePosResult(areas, customDB, quake, quakeWarnConfig);
+                listINPosResult.add(posResult);
             }
-        });
+            if (!listINPosResult.isEmpty()) {
+                posResultMapper.insertGroupData(listINPosResult);
+            }
+            DynamicDataSourceContextHolder.restoreDataSource();
+        } catch (Exception e) {
+            log.error("微震写入异常=>{}", e.getMessage(), e);
+        } finally {
+            DynamicDataSourceContextHolder.setDataSource(primaryDB);
+            int deleteCount = quakeMapper.deleteGroupData(quakes);
+            log.info(">> [{}-{}] 微震中间库分析删除完毕，删除数据个数({})", customDB, mineName, deleteCount);
+        }
+
     }
 
     @Override
@@ -238,6 +244,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
                 }
             }
             if (listUPPoints.size() != 0) {
+                DynamicDataSourceContextHolder.setDataSource(customDB);
                 stressMeasurePointMapper.updateGroupData(listUPPoints);
                 // 更新了测点之后要更新缓存中的测点信息
                 localCacheService.resetMinePointCache(customDB);

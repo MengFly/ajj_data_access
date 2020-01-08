@@ -1,21 +1,15 @@
 package com.akxy.mapper;
 
-import java.util.List;
-
+import com.akxy.entity.ConnStatus;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.akxy.entity.ConnStatus;
+import java.util.List;
 
 @Mapper
 public interface ConnStatusMapper {
-	
-	/**
-	 * 批量插入CONN_STATUS
-	 * @param list
-	 */
-	public void insertGroupData(List<ConnStatus> connStatus);
-	
-    int insert(ConnStatus record);
 
-    int insertSelective(ConnStatus record);
+    /**
+     * 批量插入CONN_STATUS
+     */
+    void insertGroupData(List<ConnStatus> connStatus);
 }

@@ -199,7 +199,7 @@
     </select>
 
     <!-- 批量删除 -->
-    <delete id="deleteGtoupData" parameterType="java.util.List">
+    <delete id="deleteGroupData" parameterType="java.util.List">
         DELETE FROM STRESS WHERE "ID" in
         <foreach item="item" collection="list" open="(" close=")"
                  separator=",">
@@ -214,7 +214,7 @@
     <delete id="deleteByTimeLessThan">
         DELETE
         FROM STRESS
-        WHERE COLLECTIONTIME &lt; #{time};
+        WHERE COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
     </delete>
 
     <!-- 根据AreaName获取最大value值 -->

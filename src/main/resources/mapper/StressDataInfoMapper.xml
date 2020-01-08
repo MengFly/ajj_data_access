@@ -39,49 +39,6 @@
 		ZF_INDEX,
 		SINGLE_INDEX
     </sql>
-
-    <!-- 将组装好的数据写入STRESS_DATAINFO -->
-    <insert id="writeToDataInfo"
-            parameterType="com.akxy.entity.StressDataInfo">
-        insert into STRESS_DATAINFO
-        (ACQUISITION_TIME, MP_NAME, AREA_ID, P_VALUE, X, Y, Z, WARN_STATUS, RED_VALUE, YELLOW_VALUE,
-         DISTANCE, DEPTH, MEMO, MP_ID)
-        values (#{acquisitionTime,jdbcType=TIMESTAMP},
-                #{mpName,jdbcType=VARCHAR},
-                #{areaId,jdbcType=DECIMAL},
-                #{pValue,jdbcType=FLOAT},
-                #{x,jdbcType=FLOAT},
-                #{y,jdbcType=FLOAT},
-                #{z,jdbcType=FLOAT},
-                #{warnStatus,jdbcType=DECIMAL},
-                #{redValue,jdbcType=DECIMAL},
-                #{yellowValue,jdbcType=DECIMAL},
-                #{distance,jdbcType=DECIMAL},
-                #{depth,jdbcType=DECIMAL},
-                #{memo,jdbcType=VARCHAR},
-                #{mpId,jdbcType=DECIMAL})
-    </insert>
-
-    <!-- 判断STRESS_DATAINFO是否已经写入过该数据 -->
-    <select id="judgeContain" resultType="java.lang.Integer">
-        SELECT "COUNT"(*)
-        FROM STRESS_DATAINFO
-        WHERE ACQUISITION_TIME = #{acquisitionTime,jdbcType=TIMESTAMP}
-          AND MP_ID = #{mpId,jdbcType=DECIMAL}
-          AND AREA_ID = #{areaId,jdbcType=DECIMAL}
-          AND ROWNUM &lt;= 2000
-        ORDER BY ACQUISITION_TIME DESC
-    </select>
-
-    <!-- 根据测点ID得到该测点出现时间的降序集合 -->
-    <select id="getPointTimeByID" resultType="java.util.Date">
-        SELECT DISTINCT ACQUISITION_TIME
-        FROM STRESS_DATAINFO
-        WHERE MP_ID = #{mpId,jdbcType=DECIMAL}
-          AND ROWNUM &lt;= 1000
-        ORDER BY ACQUISITION_TIME DESC
-    </select>
-
     <!-- 批量删除 -->
     <delete id="deleteDataInfos" parameterType="java.util.List">
         DELETE FROM STRESS_DATAINFO WHERE
@@ -132,21 +89,6 @@
         </foreach>
     </insert>
 
-    <!-- AreaId和MpId获取按时间降序的第一行 -->
-    <select id="getDataInfos" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM STRESS_DATAINFO WHERE AREA_ID=#{areaId,jdbcType = DECIMAL}
-        AND
-        MP_ID=#{mpId,jdbcType = DECIMAL} AND ROWNUM=1
-        ORDER BY ACQUISITION_TIME
-        DESC
-    </select>
-
-    <!-- 得到所有STRESS_DATAINFO信息 -->
-    <!-- <select id="getAllDataInfo" resultMap="BaseResultMap"> select <include
-        refid="Base_Column_List"/> from STRESS_DATAINFO </select> -->
-
     <!-- 获取最新一天的StressDataInfo信息 -->
     <select id="getDataInfoCache" resultMap="BaseResultMap">
         <!-- WHERE ACQUISITION_TIME BETWEEN SYSDATE-1 AND SYSDATE -->
@@ -170,17 +112,5 @@
         FROM STRESS_DATAINFO ORDER BY ACQUISITION_TIME DESC)
         WHERE ROWNUM &lt;= 1000
     </select>
-
-    <!-- 判断是否存在主键 -->
-    <select id="findConditions" resultType="java.lang.String">
-        SELECT "TO_CHAR"(ACQUISITION_TIME, 'yyyy-mm-dd HH24:mi:ss')
-                   || '/' || MP_ID ||
-               '/' || AREA_ID
-        FROM STRESS_DATAINFO
-    </select>
-
-    <!-- 最新数据上传时间 -->
-    <!-- <select id="greatestNewTime" resultType="java.util.Date"> SELECT ACQUISITION_TIME
-        FROM STRESS_DATAINFO WHERE ROWNUM=1 ORDER BY ACQUISITION_TIME DESC </select> -->
 
 </mapper>

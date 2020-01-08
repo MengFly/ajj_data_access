@@ -70,10 +70,10 @@ public class TaskUtil {
     }
 
     private ThreadPoolExecutor getExecutor() {
-        if (Thread.currentThread().getName().startsWith("TUTheadPool-fixed")) {
+        if (Thread.currentThread().getName().startsWith("TU-fix")) {
             if (fixRoundExecutor2 == null) {
                 fixRoundExecutor2 = (ThreadPoolExecutor)
-                        Executors.newFixedThreadPool(processorsCount * 2, new TUThreadFactory("2fixed"));
+                        Executors.newFixedThreadPool(processorsCount * 2, new TUThreadFactory("2fix"));
             }
             return fixRoundExecutor2;
         }
@@ -127,13 +127,13 @@ public class TaskUtil {
 
         private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger(1);
-        private final static String namePrefix = "TUTheadPool";
+        private final static String namePrefix = "TU";
         private final String _namePrefix;
 
         public TUThreadFactory(String poolName) {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            _namePrefix = namePrefix + "-" + poolName + "-thread-";
+            _namePrefix = namePrefix + "-" + poolName + "-";
         }
 
         @Override

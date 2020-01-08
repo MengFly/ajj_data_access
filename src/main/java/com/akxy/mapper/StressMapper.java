@@ -74,7 +74,7 @@ public interface StressMapper {
      *
      * @param listStress
      */
-    void deleteGtoupData(List<Stress> listStress);
+    int deleteGroupData(List<Stress> listStress);
 
     /**
      * 删除所有Stress数据
@@ -83,9 +83,6 @@ public interface StressMapper {
 
     /**
      * 根据AreaName获取最大value值
-     *
-     * @param areaName
-     * @return
      */
     Double getValueByName(@Param("areaName") String areaName);
 

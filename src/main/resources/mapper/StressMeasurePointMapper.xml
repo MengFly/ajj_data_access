@@ -47,89 +47,16 @@
 		
 	</insert>
 
-	<!-- 获取STRESS_MEASUREPOINT表中所有的MP_ID -->
-	<select id="getMPIDSDESC" resultType="java.lang.Long">
-		SELECT ID FROM STRESS_MEASUREPOINT ORDER BY "ID" DESC
-	</select>
-	
-	<select id="getMPIDList" resultType="java.lang.Long">
-		SELECT ID FROM STRESS_MEASUREPOINT ORDER BY "ID" DESC
-	</select>
 	<!-- 获取该数据对应的MP_ID -->
 	<select id="getMPID" resultType="java.lang.Long">
 		select id from STRESS_MEASUREPOINT where TUNNEL_NAME=#{tunnelName,jdbcType=VARCHAR} and
 		depth=#{depth,jdbcType=FLOAT} and distance=#{distance,jdbcType=FLOAT} AND ROWNUM=1
 	</select>
 	
-	<!-- 获取该数据对应的MP_ID -->
-	<select id="getMPIDByPostSign" resultType="java.lang.Long">
-		select id from STRESS_MEASUREPOINT where TUNNEL_NAME=#{tunnelName,jdbcType=VARCHAR} and
-		depth=#{depth,jdbcType=FLOAT} and distance=#{distance,jdbcType=FLOAT}
-	</select>
-	
-	<!-- 获取该数据对应的MP_ID -->
-	<select id="judgeContain" resultType="java.lang.Integer">
-		select "COUNT"(*) from STRESS_MEASUREPOINT where TUNNEL_NAME=#{tunnelName,jdbcType=VARCHAR} and
-		depth=#{depth,jdbcType=FLOAT} and distance=#{distance,jdbcType=FLOAT}
-	</select>
-	
-	<!-- 根据集团标志对ID进行查询并降序返回 -->
-	<select id="getFuzzyQueryID" resultType="java.lang.Long">
-		SELECT "ID" FROM STRESS_MEASUREPOINT<!--  WHERE "ID" 
-		LIKE #{sign,jdbcType=VARCHAR} --> ORDER BY "ID" DESC
-	</select>
-	
-	<!-- 更新测点信息 -->
-	<update id="updateMessurePoint" parameterType="com.akxy.entity.StressMeasurePoint">
-		update STRESS_MEASUREPOINT set
-			AREA_ID=#{areaId,jdbcType=DECIMAL},
-			NAME=#{name,jdbcType=VARCHAR},
-			TUNNEL_NAME=#{tunnelName,jdbcType=VARCHAR},
-			X=#{x,jdbcType=FLOAT},
-			Y=#{y,jdbcType=FLOAT},
-			Z=#{z,jdbcType=FLOAT},
-			DEPTH=#{depth,jdbcType=FLOAT},
-			DISTANCE=#{distance,jdbcType=FLOAT},
-			INITIAL_VALUE=#{initialValue,jdbcType=FLOAT},
-			YELLOW_WARNVALUE=#{yellowWarnvalue,jdbcType=FLOAT},
-			RED_WARNVALUE=#{redWarnvalue,jdbcType=FLOAT},
-			MEMO=#{memo,jdbcType=VARCHAR},
-			FROM_TIME=#{fromTime,jdbcType=TIMESTAMP},
-			TO_TIME=#{toTime,jdbcType=TIMESTAMP}
-		where "ID"=#{id,jdbcType=DECIMAL}
-	</update>
-	
 	<!-- 得到所有测点信息 -->
 	<select id="getAllPoint" resultMap="BaseResultMap">
 		SELECT <include refid="Base_Column_List"/> FROM STRESS_MEASUREPOINT
 	</select>
-	
-	<!-- 批量插入STRESS_MEASUREPOINT -->
-		<insert id="insertGroupData" parameterType="java.util.List">
-		insert into STRESS_MEASUREPOINT (ID,AREA_ID,NAME,TUNNEL_NAME,X,Y,Z,DEPTH,DISTANCE,
-		INITIAL_VALUE,YELLOW_WARNVALUE,RED_WARNVALUE,MEMO,FROM_TIME,TO_TIME)
-		<foreach collection="list" item="item" index="index" open="("
-			separator="union" close=")">
-			SELECT
-			#{item.id,jdbcType=DECIMAL},
-			#{item.areaId,jdbcType=DECIMAL},
-			#{item.name,jdbcType=VARCHAR},
-			#{item.tunnelName,jdbcType=VARCHAR},
-			#{item.x,jdbcType=FLOAT},
-			#{item.y,jdbcType=FLOAT},
-			#{item.z,jdbcType=FLOAT},
-			#{item.depth,jdbcType=FLOAT},
-			#{item.distance,jdbcType=FLOAT},
-			#{item.initialValue,jdbcType=FLOAT},
-			#{item.yellowWarnvalue,jdbcType=FLOAT},
-			#{item.redWarnvalue,jdbcType=FLOAT},
-			#{item.memo,jdbcType=VARCHAR},
-			#{item.fromTime,jdbcType=TIMESTAMP},
-			#{item.toTime,jdbcType=TIMESTAMP}
-			FROM
-			dual
-		</foreach>
-	</insert>
 	
 	<!-- 批量更新STRESS_MEASUREPOINT -->
 	<update id="updateGroupData" parameterType="java.util.List">

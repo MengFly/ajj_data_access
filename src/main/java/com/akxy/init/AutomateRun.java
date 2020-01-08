@@ -1,14 +1,22 @@
 package com.akxy.init;
 
+import com.akxy.configuration.DynamicDataSourceContextHolder;
 import com.akxy.controller.DataAccessController;
+import com.akxy.entity.Quake;
+import com.akxy.mapper.QuakeMapper;
+import com.akxy.mapper.StressMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -24,6 +32,10 @@ public class AutomateRun implements ApplicationRunner {
 
     @Autowired
     private DataAccessController dataAccessController;
+    @Autowired
+    private StressMapper stressMapper;
+    @Autowired
+    private QuakeMapper quakeMapper;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -48,18 +60,32 @@ public class AutomateRun implements ApplicationRunner {
         }
     }
 
-    // 每天凌晨一点执行一次
-//    @Scheduled(cron = "0 0 1 * * ?")
-//    public void deleteLastMonthData() {
-//        log.info("检查中间库一个月之前的数据进行删除");
-//        DynamicDataSourceContextHolder.setDataSource("ds0");
-//        Calendar instance = Calendar.getInstance();
-//        instance.add(Calendar.MONTH, -1);
-//        Timestamp time = new Timestamp(instance.getTimeInMillis());
-//        int deleteStressCount = stressMapper.deleteByTimeLessThan(time);
-//        int deleteQuakeCount = quakeMapper.deleteByTimeLessThan(time);
-//        log.info("删除结束,删除{}之前 应力{}条数据， 微震{}条数据",
-//                SimpleDateFormat.getDateTimeInstance().format(instance.getTime()), deleteStressCount, deleteQuakeCount);
-//    }
+    // 每小时执行一次
+    @Scheduled(cron = "0 0 0/1 * * ?")
+    public void deleteLastMonthData() {
+        // 如果程序正常运行的话，3天内应该能处理的数据
+        int shouldBeAnalysisDataCount = 24 * 60 / 5 * 1000 * 3;
+        log.info(">>>> [Scheduled] 开始检查中间库一个月之前的数据进行删除");
+        DynamicDataSourceContextHolder.setDataSource("ds0");
+        Integer stressCount = stressMapper.stressCount();
+        Calendar instance = Calendar.getInstance();
+        instance.add(Calendar.DATE, -4);
+        Timestamp time = new Timestamp(instance.getTimeInMillis());
+        if (stressCount != null && stressCount > shouldBeAnalysisDataCount / 2) {
+            log.info(">>> [Scheduled] 应力数据超过可处理上限，进行删除");
+            int deleteStressCount = stressMapper.deleteByTimeLessThan(time);
+            log.info(">>> [Scheduled] 删除{}之前的应力数({})条",
+                    SimpleDateFormat.getDateInstance().format(instance.getTime()), deleteStressCount);
 
+        }
+        Integer quakeCount = quakeMapper.quakeCount();
+        if (quakeCount != null && quakeCount > shouldBeAnalysisDataCount / 2) {
+            log.info(">>> [Scheduled] 微震数据({})超过可处理上限({})，进行删除", quakeCount, shouldBeAnalysisDataCount / 2);
+            int deleteQuakeCount = quakeMapper.deleteByTimeLessThan(time);
+            log.info(">>> [Scheduled] 删除{}之前的微震数({})条",
+                    SimpleDateFormat.getDateInstance().format(instance.getTime()), deleteQuakeCount);
+
+        }
+        log.info(">>>> [Scheduled] 定时任务执行结束");
+    }
 }

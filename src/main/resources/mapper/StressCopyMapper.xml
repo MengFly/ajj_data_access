@@ -1,367 +1,74 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.akxy.mapper.StressCopyMapper" >
-  <resultMap id="BaseResultMap" type="com.akxy.entity.StressCopy" >
-    <id column="ID" property="id" jdbcType="DECIMAL" />
-    <result column="COLLECTIONTIME" property="collectiontime" jdbcType="TIMESTAMP" />
-    <result column="MINECODE" property="minecode" jdbcType="VARCHAR" />
-    <result column="AREANAME" property="areaname" jdbcType="VARCHAR" />
-    <result column="AREATYPE" property="areatype" jdbcType="VARCHAR" />
-    <result column="SYSTEMNAME" property="systemname" jdbcType="VARCHAR" />
-    <result column="SYSTEMTYPE" property="systemtype" jdbcType="VARCHAR" />
-    <result column="STRESSTYPE" property="stresstype" jdbcType="VARCHAR" />
-    <result column="RTVPOS" property="rtvpos" jdbcType="VARCHAR" />
-    <result column="INSTALLTIME" property="installtime" jdbcType="TIMESTAMP" />
-    <result column="STRESSNO" property="stressno" jdbcType="VARCHAR" />
-    <result column="STRESSDIR" property="stressdir" jdbcType="VARCHAR" />
-    <result column="TUNNELNAME" property="tunnelname" jdbcType="VARCHAR" />
-    <result column="NAME" property="name" jdbcType="VARCHAR" />
-    <result column="VALUE" property="value" jdbcType="FLOAT" />
-    <result column="X" property="x" jdbcType="DECIMAL" />
-    <result column="Y" property="y" jdbcType="DECIMAL" />
-    <result column="Z" property="z" jdbcType="DECIMAL" />
-    <result column="DEPTH" property="depth" jdbcType="FLOAT" />
-    <result column="DISTANCE" property="distance" jdbcType="FLOAT" />
-    <result column="INITIALVALUE" property="initialvalue" jdbcType="FLOAT" />
-    <result column="REDWARN" property="redwarn" jdbcType="FLOAT" />
-    <result column="YELLOWWARN" property="yellowwarn" jdbcType="FLOAT" />
-    <result column="WARNRECORD" property="warnrecord" jdbcType="VARCHAR" />
-    <result column="MEMO" property="memo" jdbcType="VARCHAR" />
-  </resultMap>
-  <sql id="Base_Column_List" >
-    ID, COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE, STRESSTYPE, 
+<mapper namespace="com.akxy.mapper.StressCopyMapper">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.StressCopy">
+        <id column="ID" property="id" jdbcType="DECIMAL"/>
+        <result column="COLLECTIONTIME" property="collectiontime" jdbcType="TIMESTAMP"/>
+        <result column="MINECODE" property="minecode" jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaname" jdbcType="VARCHAR"/>
+        <result column="AREATYPE" property="areatype" jdbcType="VARCHAR"/>
+        <result column="SYSTEMNAME" property="systemname" jdbcType="VARCHAR"/>
+        <result column="SYSTEMTYPE" property="systemtype" jdbcType="VARCHAR"/>
+        <result column="STRESSTYPE" property="stresstype" jdbcType="VARCHAR"/>
+        <result column="RTVPOS" property="rtvpos" jdbcType="VARCHAR"/>
+        <result column="INSTALLTIME" property="installtime" jdbcType="TIMESTAMP"/>
+        <result column="STRESSNO" property="stressno" jdbcType="VARCHAR"/>
+        <result column="STRESSDIR" property="stressdir" jdbcType="VARCHAR"/>
+        <result column="TUNNELNAME" property="tunnelname" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="VALUE" property="value" jdbcType="FLOAT"/>
+        <result column="X" property="x" jdbcType="DECIMAL"/>
+        <result column="Y" property="y" jdbcType="DECIMAL"/>
+        <result column="Z" property="z" jdbcType="DECIMAL"/>
+        <result column="DEPTH" property="depth" jdbcType="FLOAT"/>
+        <result column="DISTANCE" property="distance" jdbcType="FLOAT"/>
+        <result column="INITIALVALUE" property="initialvalue" jdbcType="FLOAT"/>
+        <result column="REDWARN" property="redwarn" jdbcType="FLOAT"/>
+        <result column="YELLOWWARN" property="yellowwarn" jdbcType="FLOAT"/>
+        <result column="WARNRECORD" property="warnrecord" jdbcType="VARCHAR"/>
+        <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID, COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE, STRESSTYPE,
     RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, NAME, VALUE, X, Y, Z, DEPTH, 
     DISTANCE, INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, MEMO
-  </sql>
-  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
-    select 
-    <include refid="Base_Column_List" />
-    from STRESSCOPY
-    where ID = #{id,jdbcType=DECIMAL}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
-    delete from STRESSCOPY
-    where ID = #{id,jdbcType=DECIMAL}
-  </delete>
-  <insert id="insert" parameterType="com.akxy.entity.StressCopy" >
-    insert into STRESSCOPY (ID, COLLECTIONTIME, MINECODE, 
-      AREANAME, AREATYPE, SYSTEMNAME, 
-      SYSTEMTYPE, STRESSTYPE, RTVPOS, 
-      INSTALLTIME, STRESSNO, STRESSDIR, 
-      TUNNELNAME, NAME, VALUE, 
-      X, Y, Z, DEPTH, 
-      DISTANCE, INITIALVALUE, REDWARN, 
-      YELLOWWARN, WARNRECORD, MEMO
-      )
-    values (#{id,jdbcType=DECIMAL}, #{collectiontime,jdbcType=TIMESTAMP}, #{minecode,jdbcType=VARCHAR}, 
-      #{areaname,jdbcType=VARCHAR}, #{areatype,jdbcType=VARCHAR}, #{systemname,jdbcType=VARCHAR}, 
-      #{systemtype,jdbcType=VARCHAR}, #{stresstype,jdbcType=VARCHAR}, #{rtvpos,jdbcType=VARCHAR}, 
-      #{installtime,jdbcType=TIMESTAMP}, #{stressno,jdbcType=VARCHAR}, #{stressdir,jdbcType=VARCHAR}, 
-      #{tunnelname,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{value,jdbcType=FLOAT}, 
-      #{x,jdbcType=DECIMAL}, #{y,jdbcType=DECIMAL}, #{z,jdbcType=DECIMAL}, #{depth,jdbcType=FLOAT}, 
-      #{distance,jdbcType=FLOAT}, #{initialvalue,jdbcType=FLOAT}, #{redwarn,jdbcType=FLOAT}, 
-      #{yellowwarn,jdbcType=FLOAT}, #{warnrecord,jdbcType=VARCHAR}, #{memo,jdbcType=VARCHAR}
-      )
-  </insert>
-  <insert id="insertSelective" parameterType="com.akxy.entity.StressCopy" >
-    insert into STRESSCOPY
-    <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="id != null" >
-        ID,
-      </if>
-      <if test="collectiontime != null" >
-        COLLECTIONTIME,
-      </if>
-      <if test="minecode != null" >
-        MINECODE,
-      </if>
-      <if test="areaname != null" >
-        AREANAME,
-      </if>
-      <if test="areatype != null" >
-        AREATYPE,
-      </if>
-      <if test="systemname != null" >
-        SYSTEMNAME,
-      </if>
-      <if test="systemtype != null" >
-        SYSTEMTYPE,
-      </if>
-      <if test="stresstype != null" >
-        STRESSTYPE,
-      </if>
-      <if test="rtvpos != null" >
-        RTVPOS,
-      </if>
-      <if test="installtime != null" >
-        INSTALLTIME,
-      </if>
-      <if test="stressno != null" >
-        STRESSNO,
-      </if>
-      <if test="stressdir != null" >
-        STRESSDIR,
-      </if>
-      <if test="tunnelname != null" >
-        TUNNELNAME,
-      </if>
-      <if test="name != null" >
-        NAME,
-      </if>
-      <if test="value != null" >
-        VALUE,
-      </if>
-      <if test="x != null" >
-        X,
-      </if>
-      <if test="y != null" >
-        Y,
-      </if>
-      <if test="z != null" >
-        Z,
-      </if>
-      <if test="depth != null" >
-        DEPTH,
-      </if>
-      <if test="distance != null" >
-        DISTANCE,
-      </if>
-      <if test="initialvalue != null" >
-        INITIALVALUE,
-      </if>
-      <if test="redwarn != null" >
-        REDWARN,
-      </if>
-      <if test="yellowwarn != null" >
-        YELLOWWARN,
-      </if>
-      <if test="warnrecord != null" >
-        WARNRECORD,
-      </if>
-      <if test="memo != null" >
-        MEMO,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="id != null" >
-        #{id,jdbcType=DECIMAL},
-      </if>
-      <if test="collectiontime != null" >
-        #{collectiontime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="minecode != null" >
-        #{minecode,jdbcType=VARCHAR},
-      </if>
-      <if test="areaname != null" >
-        #{areaname,jdbcType=VARCHAR},
-      </if>
-      <if test="areatype != null" >
-        #{areatype,jdbcType=VARCHAR},
-      </if>
-      <if test="systemname != null" >
-        #{systemname,jdbcType=VARCHAR},
-      </if>
-      <if test="systemtype != null" >
-        #{systemtype,jdbcType=VARCHAR},
-      </if>
-      <if test="stresstype != null" >
-        #{stresstype,jdbcType=VARCHAR},
-      </if>
-      <if test="rtvpos != null" >
-        #{rtvpos,jdbcType=VARCHAR},
-      </if>
-      <if test="installtime != null" >
-        #{installtime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="stressno != null" >
-        #{stressno,jdbcType=VARCHAR},
-      </if>
-      <if test="stressdir != null" >
-        #{stressdir,jdbcType=VARCHAR},
-      </if>
-      <if test="tunnelname != null" >
-        #{tunnelname,jdbcType=VARCHAR},
-      </if>
-      <if test="name != null" >
-        #{name,jdbcType=VARCHAR},
-      </if>
-      <if test="value != null" >
-        #{value,jdbcType=FLOAT},
-      </if>
-      <if test="x != null" >
-        #{x,jdbcType=DECIMAL},
-      </if>
-      <if test="y != null" >
-        #{y,jdbcType=DECIMAL},
-      </if>
-      <if test="z != null" >
-        #{z,jdbcType=DECIMAL},
-      </if>
-      <if test="depth != null" >
-        #{depth,jdbcType=FLOAT},
-      </if>
-      <if test="distance != null" >
-        #{distance,jdbcType=FLOAT},
-      </if>
-      <if test="initialvalue != null" >
-        #{initialvalue,jdbcType=FLOAT},
-      </if>
-      <if test="redwarn != null" >
-        #{redwarn,jdbcType=FLOAT},
-      </if>
-      <if test="yellowwarn != null" >
-        #{yellowwarn,jdbcType=FLOAT},
-      </if>
-      <if test="warnrecord != null" >
-        #{warnrecord,jdbcType=VARCHAR},
-      </if>
-      <if test="memo != null" >
-        #{memo,jdbcType=VARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.akxy.entity.StressCopy" >
-    update STRESSCOPY
-    <set >
-      <if test="collectiontime != null" >
-        COLLECTIONTIME = #{collectiontime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="minecode != null" >
-        MINECODE = #{minecode,jdbcType=VARCHAR},
-      </if>
-      <if test="areaname != null" >
-        AREANAME = #{areaname,jdbcType=VARCHAR},
-      </if>
-      <if test="areatype != null" >
-        AREATYPE = #{areatype,jdbcType=VARCHAR},
-      </if>
-      <if test="systemname != null" >
-        SYSTEMNAME = #{systemname,jdbcType=VARCHAR},
-      </if>
-      <if test="systemtype != null" >
-        SYSTEMTYPE = #{systemtype,jdbcType=VARCHAR},
-      </if>
-      <if test="stresstype != null" >
-        STRESSTYPE = #{stresstype,jdbcType=VARCHAR},
-      </if>
-      <if test="rtvpos != null" >
-        RTVPOS = #{rtvpos,jdbcType=VARCHAR},
-      </if>
-      <if test="installtime != null" >
-        INSTALLTIME = #{installtime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="stressno != null" >
-        STRESSNO = #{stressno,jdbcType=VARCHAR},
-      </if>
-      <if test="stressdir != null" >
-        STRESSDIR = #{stressdir,jdbcType=VARCHAR},
-      </if>
-      <if test="tunnelname != null" >
-        TUNNELNAME = #{tunnelname,jdbcType=VARCHAR},
-      </if>
-      <if test="name != null" >
-        NAME = #{name,jdbcType=VARCHAR},
-      </if>
-      <if test="value != null" >
-        VALUE = #{value,jdbcType=FLOAT},
-      </if>
-      <if test="x != null" >
-        X = #{x,jdbcType=DECIMAL},
-      </if>
-      <if test="y != null" >
-        Y = #{y,jdbcType=DECIMAL},
-      </if>
-      <if test="z != null" >
-        Z = #{z,jdbcType=DECIMAL},
-      </if>
-      <if test="depth != null" >
-        DEPTH = #{depth,jdbcType=FLOAT},
-      </if>
-      <if test="distance != null" >
-        DISTANCE = #{distance,jdbcType=FLOAT},
-      </if>
-      <if test="initialvalue != null" >
-        INITIALVALUE = #{initialvalue,jdbcType=FLOAT},
-      </if>
-      <if test="redwarn != null" >
-        REDWARN = #{redwarn,jdbcType=FLOAT},
-      </if>
-      <if test="yellowwarn != null" >
-        YELLOWWARN = #{yellowwarn,jdbcType=FLOAT},
-      </if>
-      <if test="warnrecord != null" >
-        WARNRECORD = #{warnrecord,jdbcType=VARCHAR},
-      </if>
-      <if test="memo != null" >
-        MEMO = #{memo,jdbcType=VARCHAR},
-      </if>
-    </set>
-    where ID = #{id,jdbcType=DECIMAL}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.akxy.entity.StressCopy" >
-    update STRESSCOPY
-    set COLLECTIONTIME = #{collectiontime,jdbcType=TIMESTAMP},
-      MINECODE = #{minecode,jdbcType=VARCHAR},
-      AREANAME = #{areaname,jdbcType=VARCHAR},
-      AREATYPE = #{areatype,jdbcType=VARCHAR},
-      SYSTEMNAME = #{systemname,jdbcType=VARCHAR},
-      SYSTEMTYPE = #{systemtype,jdbcType=VARCHAR},
-      STRESSTYPE = #{stresstype,jdbcType=VARCHAR},
-      RTVPOS = #{rtvpos,jdbcType=VARCHAR},
-      INSTALLTIME = #{installtime,jdbcType=TIMESTAMP},
-      STRESSNO = #{stressno,jdbcType=VARCHAR},
-      STRESSDIR = #{stressdir,jdbcType=VARCHAR},
-      TUNNELNAME = #{tunnelname,jdbcType=VARCHAR},
-      NAME = #{name,jdbcType=VARCHAR},
-      VALUE = #{value,jdbcType=FLOAT},
-      X = #{x,jdbcType=DECIMAL},
-      Y = #{y,jdbcType=DECIMAL},
-      Z = #{z,jdbcType=DECIMAL},
-      DEPTH = #{depth,jdbcType=FLOAT},
-      DISTANCE = #{distance,jdbcType=FLOAT},
-      INITIALVALUE = #{initialvalue,jdbcType=FLOAT},
-      REDWARN = #{redwarn,jdbcType=FLOAT},
-      YELLOWWARN = #{yellowwarn,jdbcType=FLOAT},
-      WARNRECORD = #{warnrecord,jdbcType=VARCHAR},
-      MEMO = #{memo,jdbcType=VARCHAR}
-    where ID = #{id,jdbcType=DECIMAL}
-  </update>
-  
-  <insert id="copyStress" parameterType="java.util.List">
-			insert into STRESSCOPY
-			(COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE, STRESSTYPE, 
-		    RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, NAME, "VALUE", X, Y, Z, DEPTH, 
-		    DISTANCE, INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, MEMO)
-			<foreach collection="list" item="s" index="index" open="(" separator="union" close=")">
-				SELECT
-				<!-- #{s.id,jdbcType=DECIMAL}, --> 
-				#{s.collectiontime,jdbcType=TIMESTAMP}, 
-				#{s.minecode,jdbcType=VARCHAR}, 
-			    #{s.areaname,jdbcType=VARCHAR}, 
-			    #{s.areatype,jdbcType=VARCHAR}, 
-			    #{s.systemname,jdbcType=VARCHAR}, 
-			    #{s.systemtype,jdbcType=VARCHAR}, 
-			    #{s.stresstype,jdbcType=VARCHAR}, 
-			    #{s.rtvpos,jdbcType=VARCHAR}, 
-			    #{s.installtime,jdbcType=VARCHAR}, 
-			    #{s.stressno,jdbcType=VARCHAR}, 
-			    #{s.stressdir,jdbcType=VARCHAR}, 
-			    #{s.tunnelname,jdbcType=VARCHAR}, 
-			    #{s.name,jdbcType=VARCHAR}, 
-			    #{s.value,jdbcType=FLOAT}, 
-			    #{s.x,jdbcType=DECIMAL}, 
-			    #{s.y,jdbcType=DECIMAL}, 
-			    #{s.z,jdbcType=DECIMAL}, 
-			    #{s.depth,jdbcType=FLOAT}, 
-			    #{s.distance,jdbcType=FLOAT}, 
-			    #{s.initialvalue,jdbcType=FLOAT}, 
-			    #{s.redwarn,jdbcType=FLOAT}, 
-			    #{s.yellowwarn,jdbcType=FLOAT}, 
-			    #{s.warnrecord,jdbcType=VARCHAR}, 
-			    #{s.memo,jdbcType=VARCHAR}
-			    FROM
-				dual
-			</foreach>
-		</insert>
-  
+    </sql>
+
+    <insert id="copyStress" parameterType="java.util.List">
+        insert into STRESSCOPY
+        (COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE, STRESSTYPE,
+        RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, NAME, "VALUE", X, Y, Z, DEPTH,
+        DISTANCE, INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, MEMO)
+        <foreach collection="list" item="s" index="index" open="(" separator="union" close=")">
+            SELECT
+            <!-- #{s.id,jdbcType=DECIMAL}, -->
+            #{s.collectiontime,jdbcType=TIMESTAMP},
+            #{s.minecode,jdbcType=VARCHAR},
+            #{s.areaname,jdbcType=VARCHAR},
+            #{s.areatype,jdbcType=VARCHAR},
+            #{s.systemname,jdbcType=VARCHAR},
+            #{s.systemtype,jdbcType=VARCHAR},
+            #{s.stresstype,jdbcType=VARCHAR},
+            #{s.rtvpos,jdbcType=VARCHAR},
+            #{s.installtime,jdbcType=VARCHAR},
+            #{s.stressno,jdbcType=VARCHAR},
+            #{s.stressdir,jdbcType=VARCHAR},
+            #{s.tunnelname,jdbcType=VARCHAR},
+            #{s.name,jdbcType=VARCHAR},
+            #{s.value,jdbcType=FLOAT},
+            #{s.x,jdbcType=DECIMAL},
+            #{s.y,jdbcType=DECIMAL},
+            #{s.z,jdbcType=DECIMAL},
+            #{s.depth,jdbcType=FLOAT},
+            #{s.distance,jdbcType=FLOAT},
+            #{s.initialvalue,jdbcType=FLOAT},
+            #{s.redwarn,jdbcType=FLOAT},
+            #{s.yellowwarn,jdbcType=FLOAT},
+            #{s.warnrecord,jdbcType=VARCHAR},
+            #{s.memo,jdbcType=VARCHAR}
+            FROM
+            dual
+        </foreach>
+    </insert>
+
 </mapper>

@@ -16,66 +16,6 @@
                 jdbcType="TIMESTAMP"/>
         <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
     </resultMap>
-    <insert id="insert"
-            parameterType="com.akxy.entity.ConnTopStatus">
-        insert into CONN_TOP_STATUS (MINE_NAME, MINE_CODE, TYPE,
-                                     CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME,
-                                     MEMO)
-        values (#{mineName,jdbcType=VARCHAR}, #{mineCode,jdbcType=VARCHAR},
-                #{type,jdbcType=DECIMAL},
-                #{connStatus,jdbcType=DECIMAL}, #{warningDetail,jdbcType=VARCHAR}, #{acquireTime,jdbcType=TIMESTAMP},
-                #{memo,jdbcType=VARCHAR})
-    </insert>
-    <insert id="insertSelective"
-            parameterType="com.akxy.entity.ConnTopStatus">
-        insert into CONN_TOP_STATUS
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="mineName != null">
-                MINE_NAME,
-            </if>
-            <if test="mineCode != null">
-                MINE_CODE,
-            </if>
-            <if test="type != null">
-                TYPE,
-            </if>
-            <if test="connStatus != null">
-                CONN_STATUS,
-            </if>
-            <if test="warningDetail != null">
-                WARNING_DETAIL,
-            </if>
-            <if test="acquireTime != null">
-                ACQUIRE_TIME,
-            </if>
-            <if test="memo != null">
-                MEMO,
-            </if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="mineName != null">
-                #{mineName,jdbcType=VARCHAR},
-            </if>
-            <if test="mineCode != null">
-                #{mineCode,jdbcType=VARCHAR},
-            </if>
-            <if test="type != null">
-                #{type,jdbcType=DECIMAL},
-            </if>
-            <if test="connStatus != null">
-                #{connStatus,jdbcType=DECIMAL},
-            </if>
-            <if test="warningDetail != null">
-                #{warningDetail,jdbcType=VARCHAR},
-            </if>
-            <if test="acquireTime != null">
-                #{acquireTime,jdbcType=TIMESTAMP},
-            </if>
-            <if test="memo != null">
-                #{memo,jdbcType=VARCHAR},
-            </if>
-        </trim>
-    </insert>
 
     <select id="getTopStatusByMineCode" resultType="com.akxy.entity.ConnTopStatus" resultMap="BaseResultMap">
         SELECT MINE_NAME, MINE_CODE, TYPE, CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME, MEMO
@@ -102,22 +42,6 @@
             dual
         </foreach>
     </insert>
-
-    <!-- 批量更新CONN_TOP_STATUS -->
-    <update id="updateGroupData" parameterType="java.util.List">
-        <foreach collection="list" item="item" index="index"
-                 open="begin" close=";end;" separator=";">
-            update CONN_TOP_STATUS s
-            set
-            s.MINE_NAME=#{item.mineName,jdbcType=VARCHAR},
-            s.TYPE=#{item.type,jdbcType=VARCHAR},
-            s.WARNING_DETAIL=#{item.warningDetail,jdbcType=VARCHAR},
-            s.ACQUIRE_TIME=#{item.acquireTime,jdbcType=TIMESTAMP},
-            s.MEMO=#{item.memo,jdbcType=VARCHAR},
-            s.CONN_STATUS=#{item.connStatus,jdbcType=VARCHAR}
-            where s.MINE_CODE=#{item.mineCode,jdbcType=VARCHAR}
-        </foreach>
-    </update>
 
     <!-- 更新 -->
     <select id="updateConnTop">

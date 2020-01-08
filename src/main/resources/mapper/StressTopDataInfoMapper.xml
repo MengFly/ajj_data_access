@@ -1,75 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.akxy.mapper.StressTopDataInfoMapper">
-  <resultMap id="BaseResultMap" type="com.akxy.entity.StressTopDataInfo">
-    <result column="ACQUISITION_TIME" jdbcType="TIMESTAMP" property="acquisitionTime" />
-    <result column="MP_NAME" jdbcType="VARCHAR" property="mpName" />
-    <result column="AREA_ID" jdbcType="DECIMAL" property="areaId" />
-    <result column="P_VALUE" jdbcType="FLOAT" property="pValue" />
-    <result column="X" jdbcType="FLOAT" property="x" />
-    <result column="Y" jdbcType="FLOAT" property="y" />
-    <result column="Z" jdbcType="FLOAT" property="z" />
-    <result column="WARN_STATUS" jdbcType="DECIMAL" property="warnStatus" />
-    <result column="RED_VALUE" jdbcType="DECIMAL" property="redValue" />
-    <result column="YELLOW_VALUE" jdbcType="DECIMAL" property="yellowValue" />
-    <result column="DISTANCE" jdbcType="DECIMAL" property="distance" />
-    <result column="DEPTH" jdbcType="DECIMAL" property="depth" />
-    <result column="MEMO" jdbcType="VARCHAR" property="memo" />
-    <result column="MP_ID" jdbcType="DECIMAL" property="mpId" />
-    <result column="P_INDEX" jdbcType="FLOAT" property="pIndex" />
-    <result column="DAY_INCREASE_INDEX" jdbcType="FLOAT" property="dayIncreaseIndex" />
-    <result column="ZS_INDEX" jdbcType="FLOAT" property="zsIndex" />
-    <result column="ZF_INDEX" jdbcType="FLOAT" property="zfIndex" />
-    <result column="SINGLE_INDEX" jdbcType="FLOAT" property="singleIndex" />
-  </resultMap>
-  
-  <sql id="Base_Column_List">
-    acquisition_time, area_id, mp_id, mp_name, p_value, x, y, z, warn_status, red_value, 
+    <resultMap id="BaseResultMap" type="com.akxy.entity.StressTopDataInfo">
+        <result column="ACQUISITION_TIME" jdbcType="TIMESTAMP" property="acquisitionTime"/>
+        <result column="MP_NAME" jdbcType="VARCHAR" property="mpName"/>
+        <result column="AREA_ID" jdbcType="DECIMAL" property="areaId"/>
+        <result column="P_VALUE" jdbcType="FLOAT" property="pValue"/>
+        <result column="X" jdbcType="FLOAT" property="x"/>
+        <result column="Y" jdbcType="FLOAT" property="y"/>
+        <result column="Z" jdbcType="FLOAT" property="z"/>
+        <result column="WARN_STATUS" jdbcType="DECIMAL" property="warnStatus"/>
+        <result column="RED_VALUE" jdbcType="DECIMAL" property="redValue"/>
+        <result column="YELLOW_VALUE" jdbcType="DECIMAL" property="yellowValue"/>
+        <result column="DISTANCE" jdbcType="DECIMAL" property="distance"/>
+        <result column="DEPTH" jdbcType="DECIMAL" property="depth"/>
+        <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
+        <result column="MP_ID" jdbcType="DECIMAL" property="mpId"/>
+        <result column="P_INDEX" jdbcType="FLOAT" property="pIndex"/>
+        <result column="DAY_INCREASE_INDEX" jdbcType="FLOAT" property="dayIncreaseIndex"/>
+        <result column="ZS_INDEX" jdbcType="FLOAT" property="zsIndex"/>
+        <result column="ZF_INDEX" jdbcType="FLOAT" property="zfIndex"/>
+        <result column="SINGLE_INDEX" jdbcType="FLOAT" property="singleIndex"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        acquisition_time, area_id, mp_id, mp_name, p_value, x, y, z, warn_status, red_value,
     yellow_value, distance, depth, memo
-  </sql>
-  <!-- 写入Top表数据 -->
-	<insert id="writeTopDataInfo"
-		parameterType="com.akxy.entity.StressTopDataInfo">
-		insert into STRESS_TOP_DATAINFO (acquisition_time,mp_name, area_id, p_value,
-		x, y, z,
-		warn_status, red_value,
-		yellow_value, distance, depth, memo, mp_id)
-		values (#{acquisitionTime,jdbcType=TIMESTAMP},
-		#{mpName,jdbcType=VARCHAR},
-		#{areaId,jdbcType=DECIMAL},
-		#{pValue,jdbcType=FLOAT},
-		#{x,jdbcType=FLOAT},
-		#{y,jdbcType=FLOAT},
-		#{z,jdbcType=FLOAT},
-		#{warnStatus,jdbcType=DECIMAL},
-		#{redValue,jdbcType=DECIMAL},
-		#{yellowValue,jdbcType=DECIMAL},
-		#{distance,jdbcType=DECIMAL},
-		#{depth,jdbcType=DECIMAL},
-		#{memo,jdbcType=VARCHAR},
-		#{mpId,jdbcType=DECIMAL})
-	</insert>
-
-	<!-- 依据MPID判断是否已经存在该测点数据 -->
-	<select id="judgeContainByMPID" resultType="java.lang.Integer">
-		select count(*) from STRESS_TOP_DATAINFO where 
-		AREA_ID=#{areaId,jdbcType=DECIMAL} AND MP_ID=#{MPID,jdbcType=DECIMAL}
-	</select>
-
-	<!-- 依据MPID删除已经存在的测点数据 -->
-	<delete id="deleteTopDataByMPID">
-		DELETE from STRESS_TOP_DATAINFO WHERE MP_ID=#{MPID,jdbcType=DECIMAL}
-	</delete>
-
-	<!-- 批量插入Stress_Top_DataInfo -->
-	<insert id="insertGroupData" parameterType="java.util.List">
-		insert into STRESS_TOP_DATAINFO (ACQUISITION_TIME,MP_NAME,AREA_ID,P_VALUE,X,Y,Z,WARN_STATUS,RED_VALUE,YELLOW_VALUE,
-		DISTANCE,DEPTH,MEMO,MP_ID)
-		<foreach collection="list" item="item" index="index" open="("
-			separator="union" close=")">
-			SELECT
-			#{item.acquisitionTime,
-			jdbcType = TIMESTAMP}, #{item.mpName,
+    </sql>
+    <!-- 批量插入Stress_Top_DataInfo -->
+    <insert id="insertGroupData" parameterType="java.util.List">
+        insert into STRESS_TOP_DATAINFO
+        (ACQUISITION_TIME,MP_NAME,AREA_ID,P_VALUE,X,Y,Z,WARN_STATUS,RED_VALUE,YELLOW_VALUE,
+        DISTANCE,DEPTH,MEMO,MP_ID)
+        <foreach collection="list" item="item" index="index" open="("
+                 separator="union" close=")">
+            SELECT
+            #{item.acquisitionTime,
+            jdbcType = TIMESTAMP}, #{item.mpName,
 			jdbcType = VARCHAR}, #{item.areaId,
 			jdbcType = DECIMAL}, #{item.pValue,
 			jdbcType = FLOAT}, #{item.x,
@@ -83,64 +50,40 @@
 			jdbcType = DECIMAL}, #{item.memo,
 			jdbcType = VARCHAR}, #{item.mpId,
 			jdbcType = DECIMAL}
-			FROM
-			dual
-		</foreach>
-	</insert>
-	
-	<!-- 更新Top表 -->
-	<update id="updateTopData">
-		update STRESS_TOP_DATAINFO set
-			ACQUISITION_TIME=#{acquisitionTime,jdbcType = TIMESTAMP},
-			MP_NAME=#{mpName,jdbcType = VARCHAR},
-			P_VALUE=#{pValue,jdbcType = FLOAT},
-			X=#{x,jdbcType = FLOAT},
-			Y=#{y,jdbcType = FLOAT},
-			Z=#{z,jdbcType = FLOAT},
-			WARN_STATUS=#{warnStatus,jdbcType = DECIMAL},
-			RED_VALUE=#{redValue,jdbcType = DECIMAL},
-			YELLOW_VALUE=#{yellowValue,jdbcType = DECIMAL},
-			DISTANCE=#{distance,jdbcType = DECIMAL},
-			DEPTH=#{depth,jdbcType = DECIMAL},
-			MEMO=#{memo,jdbcType = VARCHAR}
-		WHERE AREA_ID=#{areaId,jdbcType = DECIMAL} AND
-			  MP_ID=#{mpId,jdbcType = DECIMAL}
-	</update>
-	
-	<!-- 批量更新参数 -->
-	<update id="updateGroupTopDataInfos"
-		parameterType="java.util.List">
-		<foreach collection="list" item="item" index="index"
-			open="begin" close=";end;" separator=";">
-			update STRESS_TOP_DATAINFO t set
-				t.ACQUISITION_TIME=#{item.acquisitionTime,jdbcType = TIMESTAMP},
-				t.MP_NAME=#{item.mpName,jdbcType = VARCHAR},
-				t.P_VALUE=#{item.pValue,jdbcType = FLOAT},
-				t.X=#{item.x,jdbcType = FLOAT},
-				t.Y=#{item.y,jdbcType = FLOAT},
-				t.Z=#{item.z,jdbcType = FLOAT},
-				t.WARN_STATUS=#{item.warnStatus,jdbcType = DECIMAL},
-				t.RED_VALUE=#{item.redValue,jdbcType = DECIMAL},
-				t.YELLOW_VALUE=#{item.yellowValue,jdbcType = DECIMAL},
-				t.DISTANCE=#{item.distance,jdbcType = DECIMAL},
-				t.DEPTH=#{item.depth,jdbcType = DECIMAL},
-				t.MEMO=#{item.memo,jdbcType = VARCHAR}
-			WHERE t.AREA_ID=#{item.areaId,jdbcType = DECIMAL} AND
-				  t.MP_ID=#{item.mpId,jdbcType = DECIMAL}
-		</foreach>
-	</update>
-	
-	<!-- 获取MpNames -->
-	<select id="findAreaIdsAndMpIds" resultType="java.lang.String">
-		SELECT MP_ID || '/' || AREA_ID FROM STRESS_TOP_DATAINFO
-	</select>
-	
-	<select id="findNewDate" resultType="java.util.Date">
-		SELECT ACQUISITION_TIME FROM (SELECT ACQUISITION_TIME FROM STRESS_TOP_DATAINFO ORDER BY ACQUISITION_TIME DESC) WHERE ROWNUM = 1
-	</select>
-  
-  <select id="stressTopDataInfos" resultMap="BaseResultMap">
-  	select <include refid="Base_Column_List"/> from STRESS_TOP_DATAINFO
-  </select>
-  
+            FROM
+            dual
+        </foreach>
+    </insert>
+
+    <!-- 更新Top表 -->
+    <update id="updateTopData">
+        update STRESS_TOP_DATAINFO
+        set ACQUISITION_TIME=#{acquisitionTime,jdbcType = TIMESTAMP},
+            MP_NAME=#{mpName,jdbcType = VARCHAR},
+            P_VALUE=#{pValue,jdbcType = FLOAT},
+            X=#{x,jdbcType = FLOAT},
+            Y=#{y,jdbcType = FLOAT},
+            Z=#{z,jdbcType = FLOAT},
+            WARN_STATUS=#{warnStatus,jdbcType = DECIMAL},
+            RED_VALUE=#{redValue,jdbcType = DECIMAL},
+            YELLOW_VALUE=#{yellowValue,jdbcType = DECIMAL},
+            DISTANCE=#{distance,jdbcType = DECIMAL},
+            DEPTH=#{depth,jdbcType = DECIMAL},
+            MEMO=#{memo,jdbcType = VARCHAR}
+        WHERE AREA_ID = #{areaId,jdbcType = DECIMAL}
+          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+    </update>
+
+    <select id="findNewDate" resultType="java.util.Date">
+        SELECT ACQUISITION_TIME
+        FROM (SELECT ACQUISITION_TIME FROM STRESS_TOP_DATAINFO ORDER BY ACQUISITION_TIME DESC)
+        WHERE ROWNUM = 1
+    </select>
+
+    <select id="stressTopDataInfos" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from STRESS_TOP_DATAINFO
+    </select>
+
 </mapper>

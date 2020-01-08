@@ -1,30 +1,15 @@
 package com.akxy.mapper;
 
-import java.util.List;
-
+import com.akxy.entity.Quake;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.akxy.entity.Quake;
-import com.akxy.entity.QuakeCopy;
+import java.util.List;
 
 @Mapper
 public interface QuakeCopyMapper {
-	
-	/**
-	 * copy Quake表到本地
-	 * @param quakes
-	 */
-	void copyQuake(List<Quake> quakes);
-	
-    int deleteByPrimaryKey(Integer id);
 
-    int insert(QuakeCopy record);
-
-    int insertSelective(QuakeCopy record);
-
-    QuakeCopy selectByPrimaryKey(Integer id);
-
-    int updateByPrimaryKeySelective(QuakeCopy record);
-
-    int updateByPrimaryKey(QuakeCopy record);
+    /**
+     * copy Quake表到本地
+     */
+    void copyQuake(List<Quake> quakes);
 }

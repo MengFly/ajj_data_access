@@ -1,25 +1,15 @@
 package com.akxy.mapper;
 
+import com.akxy.entity.Config;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.akxy.entity.Config;
-
 @Mapper
 public interface ConfigMapper {
-    
-	/**
-	 * 查询微震预警配置
-	 * @return
-	 */
-//	public String getQuakeWarnCon();
-	
-	/**
-	 * 获取配置信息
-	 * @param type
-	 * @param name
-	 * @return
-	 */
-	public Config getConfigInfo(@Param("type")String type,@Param("name")String name);
-	
+
+    /**
+     * 获取配置信息
+     */
+    Config getConfigInfo(@Param("type") String type, @Param("name") String name);
+
 }
