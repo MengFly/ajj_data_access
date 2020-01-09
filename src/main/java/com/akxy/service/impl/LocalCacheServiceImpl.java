@@ -111,27 +111,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     }
 
     @Override
-    public List<ConnTopStatus> getMineConnTopStatusCache(String mineDb) {
-        if (!totalConnTopCache.containsKey(mineDb)) {
-            resetMineConnTopStatusCache(mineDb);
-        }
-        List<ConnTopStatus> connTopStatuses = totalConnTopCache.getOrDefault(mineDb, null);
-        if (connTopStatuses == null) {
-            resetMineConnTopStatusCache(mineDb);
-            return totalConnTopCache.getOrDefault(mineDb, Collections.emptyList());
-        } else {
-            return connTopStatuses;
-        }
-    }
-
-    @Override
-    public void resetMineConnTopStatusCache(String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource("1000"); // 安监局平台数据库
-        totalConnTopCache.put(mineDb, connTopStatusMapper.getTopStatusByMineCode(mineDb));
-        DynamicDataSourceContextHolder.restoreDataSource();
-    }
-
-    @Override
     public List<CurMineInfo> getCurMineCache(String mineDb) {
         if (!totalCurMineCache.containsKey(mineDb)) {
             resetCurMineCache(mineDb);

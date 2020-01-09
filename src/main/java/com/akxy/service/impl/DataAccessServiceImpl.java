@@ -295,8 +295,6 @@ public class DataAccessServiceImpl implements IDataAccessService {
         List<Mine> mines = localCacheService.getMidMineCache(customDB);
         DynamicDataSourceContextHolder.setDataSource(customDB);
         List<ConnStatus> listConStatus = new ArrayList<>();
-        List<ConnTopStatus> listINTopStatus = new ArrayList<>();
-        List<ConnTopStatus> listUPTopStatus = new ArrayList<>();
         DynamicDataSourceContextHolder.setDataSource(customDB);
         Date stressTopNewDate = stressTopDataInfoMapper.findNewDate();
         int stressTopTimeOut = Integer.parseInt(configMapper.getConfigInfo("TIME", "STRESSTIMEOUT").getStrValue());
@@ -308,53 +306,36 @@ public class DataAccessServiceImpl implements IDataAccessService {
             ConnStatus quakeConnStatu = dataUtil.getQuakeConStatus(customDB, mine, quakeTopNewDate, quakeTopTimeOut);
             if (stressConnStatu != null) {
                 listConStatus.add(stressConnStatu);
-                // 把单个状态信息与Top表对比
-                ConnTopStatus stresssConnTopStatus = new ConnTopStatus();
-                BeanUtils.copyProperties(stressConnStatu, stresssConnTopStatus);
-                boolean isContains = localCacheService.getMineConnTopStatusCache(customDB)
-                        .stream()
-                        .anyMatch(e -> e.getMineCode().equals(stresssConnTopStatus.getMineCode())
-                                && e.getType().equals(stresssConnTopStatus.getType()));
-                if (isContains) {
-                    listUPTopStatus.add(stresssConnTopStatus);
-                } else {
-                    listINTopStatus.add(stresssConnTopStatus);
-                }
+                saveOrUpdateTopStatus(stressConnStatu, customDB, mineName);
             }
             if (quakeConnStatu != null) {
                 listConStatus.add(quakeConnStatu);
-                // 把单个状态信息与Top表对比
-                ConnTopStatus quakeConnTopStatus = new ConnTopStatus();
-                BeanUtils.copyProperties(quakeConnStatu, quakeConnTopStatus);
-                boolean isContains = localCacheService.getMineConnTopStatusCache(customDB)
-                        .stream().anyMatch(c -> Objects.equals(quakeConnTopStatus.getMineCode(), c.getMineCode())
-                                && c.getType().equals(quakeConnTopStatus.getType()));
-                if (isContains) {
-                    listUPTopStatus.add(quakeConnTopStatus);
-                } else {
-                    listINTopStatus.add(quakeConnTopStatus);
-                }
+                saveOrUpdateTopStatus(quakeConnStatu, customDB, mineName);
             }
         }
-//        log.info("FENGYUANSHIYE=>{}", listUPTopStatus);
         DynamicDataSourceContextHolder.setDataSource("1000");
         // 连接历史表批量插入
         if (listConStatus.size() != 0) {
             connStatusMapper.insertGroupData(listConStatus);
         }
-        if (listINTopStatus.size() != 0) {
-            connTopStatusMapper.insertGroupData(listINTopStatus);
-        }
-        if (listUPTopStatus.size() != 0) {
-            listUPTopStatus.forEach(top -> {
-                connTopStatusMapper.updateConnTop(top);
-            });
-        }
-        log.info(">> [{}-{}] 连接状态更新完成,新增Top状态({})，更新Top状态({})",
-                customDB, mineName, listINTopStatus.size(),
-                listUPTopStatus.size());
-        localCacheService.resetMineConnTopStatusCache(customDB);
         DynamicDataSourceContextHolder.restoreDataSource();
+    }
+
+    private void saveOrUpdateTopStatus(ConnStatus connStatus, String customDB, String mineName) {
+        ConnTopStatus connTopStatus = new ConnTopStatus();
+        BeanUtils.copyProperties(connStatus, connTopStatus);
+        if (connTopStatusMapper.countByMineCodeAndType(connTopStatus) > 0) {
+            connTopStatusMapper.update(connTopStatus);
+            log.info(">> [{}-{}] 更新预警状态", customDB, mineName);
+        } else {
+            int insert = connTopStatusMapper.insert(connTopStatus);
+            if (insert > 0) {
+                log.info(">> [{}-{}] 新增预警状态", customDB, mineName);
+            } else {
+                log.error(">> [{}-{}] 新增预警状态失败", customDB, mineName);
+            }
+
+        }
     }
 
     @Override

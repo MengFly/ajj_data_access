@@ -38,16 +38,6 @@ public interface ILocalCacheService {
      */
     void resetStressDataCache(String mineDb);
 
-    /**
-     * 获取平台数据库个子矿区连接状态信息
-     */
-    List<ConnTopStatus> getMineConnTopStatusCache(String mineDb);
-
-    /**
-     * 重载平台连接状态缓存
-     */
-    void resetMineConnTopStatusCache(String mineDb);
-
 
     List<CurMineInfo> getCurMineCache(String mineDb);
 

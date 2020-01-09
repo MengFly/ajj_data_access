@@ -118,13 +118,6 @@
 
     <!-- 从中间库读取Stress数据 WHERE ROWNUM <![CDATA[ <= ]]> 1000 -->
     <select id="readStressData" resultMap="BaseResultMap">
-        <!-- SELECT * FROM Stress where MINECODE = #{customDB,jdbcType=VARCHAR}
-            AND COLLECTIONTIME>="TO_DATE"('2019-01-07 15:46:19', 'yyyy-mm-dd hh24:mi:ss')
-            AND ROWNUM <![CDATA[ <= ]]> 250000 ORDER BY VALUE DESC -->
-        <!-- SELECT <include refid="Base_Column_List"/> FROM( SELECT s.*, ROW_NUMBER
-            () OVER ( PARTITION BY s.COLLECTIONTIME, s.TUNNELNAME, s.DEPTH, s.DISTANCE
-            ORDER BY s.COLLECTIONTIME DESC ) su FROM STRESS s WHERE s.MINECODE = #{customDB,jdbcType=VARCHAR})
-            WHERE su = 1 -->
         SELECT
         <include refid="Base_Column_List"/>
         FROM

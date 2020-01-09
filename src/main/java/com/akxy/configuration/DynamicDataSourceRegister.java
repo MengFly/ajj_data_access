@@ -1,5 +1,6 @@
 package com.akxy.configuration;
 
+import com.akxy.common.SqlCheckInterceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
@@ -182,6 +183,7 @@ public class 	DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar
 		// 下边两句仅仅用于*.xml文件，如果整个持久层操作不需要使用到xml文件的话（只用注解就可以搞定），则不加
 		fb.setTypeAliasesPackage("com.akxy.entity");// 指定基包
 		fb.setMapperLocations(resolver.getResources("classpath:mapper/**/*.xml"));//
+		fb.setPlugins(new SqlCheckInterceptor());
 		return fb.getObject();
 	}
 

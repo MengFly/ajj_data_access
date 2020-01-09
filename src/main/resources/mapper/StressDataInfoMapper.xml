@@ -54,10 +54,6 @@
     <!-- 批量插入STRESS_DATAINFO数据 -->
     <insert id="insertGroupDataInfo" parameterType="java.util.List">
         <!-- 添加批量删除 -->
-        <!-- <foreach collection="list" item="item" index="index" separator="or">
-            delete from STRESS_DATAINFO WHRER ACQUISITION_TIME=#{item.acquisitionTime,jdbcType
-            = TIMESTAMP} AND AREA_ID=#{item.areaId,jdbcType = DECIMAL} AND MP_ID= #{item.mpId,jdbcType
-            = DECIMAL}; </foreach> -->
         insert into STRESS_DATAINFO
         (ACQUISITION_TIME,MP_NAME,AREA_ID,P_VALUE,X,Y,Z,WARN_STATUS,RED_VALUE,YELLOW_VALUE,
         DISTANCE,DEPTH,MEMO,MP_ID)

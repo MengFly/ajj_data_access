@@ -17,34 +17,19 @@
         <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <select id="getTopStatusByMineCode" resultType="com.akxy.entity.ConnTopStatus" resultMap="BaseResultMap">
-        SELECT MINE_NAME, MINE_CODE, TYPE, CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME, MEMO
-        FROM CONN_TOP_STATUS
-        WHERE MINE_CODE = #{mineCode}
-    </select>
-
-    <!-- 批量插入CONN_TOP_STATUS数据 -->
-    <insert id="insertGroupData" parameterType="java.util.List">
-        insert into CONN_TOP_STATUS (MINE_NAME, MINE_CODE, TYPE,
-        CONN_STATUS,
-        WARNING_DETAIL, ACQUIRE_TIME,MEMO)
-        <foreach collection="list" item="item" index="index" open="("
-                 separator="union" close=")">
-            SELECT
-            #{item.mineName,jdbcType=VARCHAR},
-            #{item.mineCode,jdbcType=VARCHAR},
-            #{item.type,jdbcType=VARCHAR},
-            #{item.connStatus,jdbcType=VARCHAR},
-            #{item.warningDetail,jdbcType=VARCHAR},
-            #{item.acquireTime,jdbcType=TIMESTAMP},
-            #{item.memo,jdbcType=VARCHAR}
-            FROM
-            dual
-        </foreach>
+    <insert id="insert">
+        INSERT INTO CONN_TOP_STATUS (MINE_NAME, MINE_CODE, TYPE, CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME, MEMO)
+        VALUES (#{mineName,jdbcType=VARCHAR},
+                #{mineCode,jdbcType=VARCHAR},
+                #{type,jdbcType=VARCHAR},
+                #{connStatus,jdbcType=VARCHAR},
+                #{warningDetail,jdbcType=VARCHAR},
+                #{acquireTime,jdbcType=TIMESTAMP},
+                #{memo,jdbcType=VARCHAR})
     </insert>
 
     <!-- 更新 -->
-    <select id="updateConnTop">
+    <select id="update">
         update CONN_TOP_STATUS
         set
         <!-- MINE_NAME=#{mineName,jdbcType=VARCHAR}, TYPE=#{type,jdbcType=VARCHAR}, -->
@@ -54,6 +39,12 @@
         CONN_STATUS=#{connStatus,jdbcType=VARCHAR}
         where MINE_CODE=#{mineCode,jdbcType=VARCHAR} AND
         TYPE=#{type,jdbcType=VARCHAR}
+    </select>
+    <select id="countByMineCodeAndType" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM CONN_TOP_STATUS
+        WHERE MINE_CODE = #{topStatus.mineCode,jdbcType=VARCHAR}
+          AND TYPE = #{topStatus.type,jdbcType=VARCHAR}
     </select>
 
 </mapper>

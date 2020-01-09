@@ -9,15 +9,10 @@ import java.util.List;
 @Mapper
 public interface ConnTopStatusMapper {
 	
-	/**
-	 * 更新
-	 */
-	 void updateConnTop(ConnTopStatus connTopStatus);
+    void update(ConnTopStatus connTopStatus);
 
-	 List<ConnTopStatus> getTopStatusByMineCode(@Param("mineCode") String mineCode);
-	
-	/**
-	 * 批量插入CONN_TOP_STATUS
-	 */
-	 void insertGroupData(List<ConnTopStatus> connTopStatus);
+    int insert(ConnTopStatus topStatus);
+
+    int countByMineCodeAndType(@Param("topStatus") ConnTopStatus topStatus);
+
 }
