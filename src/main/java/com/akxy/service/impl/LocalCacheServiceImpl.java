@@ -8,19 +8,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
+/**
+ * @author wangp
+ */
 @SuppressWarnings("unchecked")
 @Service
 public class LocalCacheServiceImpl implements ILocalCacheService {
 
-    // 子矿区数据库中的信息，不需要每次都从数据库中取出
-    private Map<String, List<Area>> totalMineAreaCache = new ConcurrentHashMap<>();
+    /**
+     * 子矿区数据库中的信息，不需要每次都从数据库中取出
+     */
+    private Map<String, Map<String, Area>> totalMineAreaCache = new ConcurrentHashMap<>();
     private Map<String, List<StressMeasurePoint>> totalPointCache = new ConcurrentHashMap<>();
-    private Map<String, List<ConnTopStatus>> totalConnTopCache = new ConcurrentHashMap<>();
-    private Map<String, List<CurMineInfo>> totalCurMineCache = new ConcurrentHashMap<>();
     private Map<String, List<StressDataInfo>> totalStressDataCache = new ConcurrentHashMap<>();
 
 
@@ -33,28 +38,23 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     @Autowired
     private StressMeasurePointMapper measurePointMapper;
     @Autowired
-    private ConnTopStatusMapper connTopStatusMapper;
-    @Autowired
     private StressMapper stressMapper;
     @Autowired
     private QuakeMapper quakeMapper;
     @Autowired
     private MineMapper mineMapper;
     @Autowired
-    private CurMineInfoMapper curMineInfoMapper;
-    @Autowired
     StressDataInfoMapper stressDataInfoMapper;
 
-
     @Override
-    public List<Area> getMineAreaCache(String mineDb) {
+    public Map<String, Area> getMineAreaCache(String mineDb) {
         if (!totalMineAreaCache.containsKey(mineDb)) {
             resetMineAreaCache(mineDb);
         }
-        List<Area> areas = totalMineAreaCache.getOrDefault(mineDb, null);
+        Map<String, Area> areas = totalMineAreaCache.getOrDefault(mineDb, null);
         if (areas == null) {
             resetMineAreaCache(mineDb);
-            return totalMineAreaCache.getOrDefault(mineDb, Collections.emptyList());
+            return totalMineAreaCache.getOrDefault(mineDb, Collections.emptyMap());
         } else {
             return areas;
         }
@@ -63,7 +63,11 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     @Override
     public void resetMineAreaCache(String mineDb) {
         DynamicDataSourceContextHolder.setDataSource(mineDb);
-        totalMineAreaCache.put(mineDb, areaMapper.getArea());
+        Map<String, Area> areaMap = new LinkedHashMap<>();
+        for (Area area : areaMapper.getArea()) {
+            areaMap.put(area.getName(), area);
+        }
+        totalMineAreaCache.put(mineDb, areaMap);
         DynamicDataSourceContextHolder.restoreDataSource();
     }
 
@@ -111,33 +115,17 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     }
 
     @Override
-    public List<CurMineInfo> getCurMineCache(String mineDb) {
-        if (!totalCurMineCache.containsKey(mineDb)) {
-            resetCurMineCache(mineDb);
-        }
-        List<CurMineInfo> curMine = totalCurMineCache.getOrDefault(mineDb, null);
-        if (curMine == null) {
-            resetCurMineCache(mineDb);
-            return totalCurMineCache.getOrDefault(mineDb, Collections.emptyList());
-        } else {
-            return curMine;
-        }
-    }
-
-    @Override
-    public void resetCurMineCache(String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource(mineDb);
-        totalCurMineCache.put(mineDb, curMineInfoMapper.getAllCurMine());
-        DynamicDataSourceContextHolder.restoreDataSource();
-    }
-
-    @Override
-    public void prepareMidCache(String primaryDB, String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource(primaryDB);// 中间库数据库
-        midDataBaseCache.put("STRESS" + mineDb, stressMapper.readStressData(mineDb));// 1000 条应力数据
-        midDataBaseCache.put("QUAKE" + mineDb, quakeMapper.readQuakeData(mineDb)); // 1000 条微震信息
-        midDataBaseCache.put("MINE" + mineDb, mineMapper.listMines(mineDb));// 本矿区信息
-        midDataBaseCache.put("AREANAME" + mineDb, stressMapper.getAllAreaName(mineDb));// 应力数据中包含的工作面信息
+    public void prepareMidCache(String primaryDb, String mineDb) {
+        // 中间库数据库
+        DynamicDataSourceContextHolder.setDataSource(primaryDb);
+        // 1000 条应力数据
+        midDataBaseCache.put("STRESS" + mineDb, stressMapper.readStressData(mineDb));
+        // 1000 条微震信息
+        midDataBaseCache.put("QUAKE" + mineDb, quakeMapper.readQuakeData(mineDb));
+        // 本矿区信息
+        midDataBaseCache.put("MINE" + mineDb, mineMapper.listMines(mineDb));
+        // 应力数据中包含的工作面信息
+        midDataBaseCache.put("AREANAME" + mineDb, stressMapper.getAllAreaName(mineDb));
         DynamicDataSourceContextHolder.restoreDataSource();
     }
 
@@ -162,7 +150,8 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     @Override
     public List<String> getMidAreaNameCache(String mineDb) {
         Object orDefault = midDataBaseCache.getOrDefault("AREANAME" + mineDb, null);
-        return orDefault == null ? Collections.emptyList() : (List<String>) orDefault;
+        return orDefault == null ? Collections.emptyList() :
+                ((List<String>) orDefault).stream().distinct().collect(Collectors.toList());
     }
 
     @Override

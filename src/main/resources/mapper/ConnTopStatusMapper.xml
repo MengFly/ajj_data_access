@@ -32,7 +32,6 @@
     <select id="update">
         update CONN_TOP_STATUS
         set
-        <!-- MINE_NAME=#{mineName,jdbcType=VARCHAR}, TYPE=#{type,jdbcType=VARCHAR}, -->
         WARNING_DETAIL=#{warningDetail,jdbcType=VARCHAR},
         ACQUIRE_TIME=#{acquireTime,jdbcType=TIMESTAMP},
         MEMO=#{memo,jdbcType=VARCHAR},

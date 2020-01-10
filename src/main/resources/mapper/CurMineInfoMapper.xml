@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.akxy.mapper.CurMineInfoMapper">
-    <resultMap id="BaseResultMap" type="com.akxy.entity.CurMineInfo">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.MineInfo">
         <result column="AREA_ID" jdbcType="DECIMAL" property="areaId"/>
         <result column="TYPE" jdbcType="DECIMAL" property="type"/>
         <result column="ACQUISITION_TIME" jdbcType="TIMESTAMP"
@@ -15,13 +15,20 @@
     </resultMap>
 
     <!-- 写入预警信息 -->
-    <insert id="writeToCurMine"
-            parameterType="com.akxy.entity.CurMineInfo">
+    <insert id="insertAll" parameterType="list">
         insert into CURMINE_INFO
         (AREA_ID, TYPE, ACQUISITION_TIME, STRESS_VALUE, QUAKE_VALUE, MEMO, MP_ID)
-        values (#{areaId,jdbcType=DECIMAL}, #{type,jdbcType=DECIMAL}, #{acquisitionTime,jdbcType=TIMESTAMP},
-                #{stressValue,jdbcType=FLOAT}, #{quakeValue,jdbcType=FLOAT}, #{memo,jdbcType=VARCHAR},
-                #{mpId,jdbcType=DECIMAL})
+        <foreach collection="list" item="item" index="index" open="(" separator="union" close=")">
+            SELECT
+            #{item.areaId,jdbcType=DECIMAL},
+            #{item.type,jdbcType=DECIMAL},
+            #{item.acquisitionTime,jdbcType=TIMESTAMP},
+            #{item.stressValue,jdbcType=FLOAT},
+            #{item.quakeValue,jdbcType=FLOAT},
+            #{item.memo,jdbcType=VARCHAR},
+            #{item.mpId,jdbcType=DECIMAL})
+            FROM dual
+        </foreach>
     </insert>
 
     <!-- 更新已存在的数据 -->
@@ -39,6 +46,12 @@
     <select id="getAllCurMine" resultMap="BaseResultMap">
         select AREA_ID, MP_ID
         from CURMINE_INFO
+    </select>
+    <select id="countByAreaIdAndMpId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM CURMINE_INFO
+        WHERE AREA_ID = #{areaId,jdbcType=DECIMAL}
+          AND MP_ID = #{mpId,jdbcType=DECIMAL}
     </select>
 
 </mapper>

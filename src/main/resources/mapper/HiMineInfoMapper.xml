@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.akxy.mapper.HiMineInfoMapper">
-    <resultMap id="BaseResultMap" type="com.akxy.entity.HiMineInfo">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.MineInfo">
         <id column="area_id" jdbcType="DECIMAL" property="areaId"/>
         <id column="type" jdbcType="DECIMAL" property="type"/>
         <id column="mp_id" jdbcType="DECIMAL" property="mpId"/>

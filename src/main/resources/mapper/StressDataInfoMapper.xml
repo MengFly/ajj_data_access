@@ -42,8 +42,7 @@
     <!-- 批量删除 -->
     <delete id="deleteDataInfos" parameterType="java.util.List">
         DELETE FROM STRESS_DATAINFO WHERE
-        <foreach item="item" collection="list" index="index"
-                 separator="or">
+        <foreach item="item" collection="list" index="index" separator="or">
             (ACQUISITION_TIME=#{item.acquisitionTime,jdbcType
             =
             TIMESTAMP} AND AREA_ID=#{item.areaId,jdbcType = DECIMAL} AND MP_ID=
@@ -107,6 +106,16 @@
         SINGLE_INDEX
         FROM STRESS_DATAINFO ORDER BY ACQUISITION_TIME DESC)
         WHERE ROWNUM &lt;= 1000
+    </select>
+    <select id="findMaxAcquisitionTime" resultType="java.sql.Timestamp">
+        SELECT MAX(ACQUISITION_TIME)
+        FROM STRESS_DATAINFO
+    </select>
+    <select id="findMaxAcquisitionTimeBy" resultType="java.sql.Timestamp">
+        SELECT MAX(ACQUISITION_TIME)
+        FROM STRESS_DATAINFO
+        WHERE AREA_ID = #{areaId,jdbcType = DECIMAL}
+          AND MP_ID = #{mpId, jdbcType = DECIMAL}
     </select>
 
 </mapper>

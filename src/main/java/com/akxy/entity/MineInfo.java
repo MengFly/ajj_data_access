@@ -2,11 +2,12 @@ package com.akxy.entity;
 
 import java.util.Date;
 
-public class CurMineInfo {
+public class MineInfo {
+
     private Long areaId;
 
     private Short type;
-
+    private Long mpId;
     private Date acquisitionTime;
 
     private Double stressValue;
@@ -14,32 +15,6 @@ public class CurMineInfo {
     private Double quakeValue;
 
     private String memo;
-    
-    private Long mpId;
-
-    public Long getMpId() {
-		return mpId;
-	}
-
-	public void setMpId(Long mpId) {
-		this.mpId = mpId;
-	}
-
-	public Long getAreaId() {
-        return areaId;
-    }
-
-    public void setAreaId(Long areaId) {
-        this.areaId = areaId;
-    }
-
-    public Short getType() {
-        return type;
-    }
-
-    public void setType(Short type) {
-        this.type = type;
-    }
 
     public Date getAcquisitionTime() {
         return acquisitionTime;
@@ -73,10 +48,34 @@ public class CurMineInfo {
         this.memo = memo == null ? null : memo.trim();
     }
 
-	@Override
-	public String toString() {
-		return "CurMineInfo [areaId=" + areaId + ", type=" + type + ", acquisitionTime=" + acquisitionTime
-				+ ", stressValue=" + stressValue + ", quakeValue=" + quakeValue + ", memo=" + memo + "]";
-	}
-    
+
+    public Long getMpId() {
+        return mpId;
+    }
+
+    public void setMpId(Long mpId) {
+        this.mpId = mpId;
+    }
+
+    public Long getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(Long areaId) {
+        this.areaId = areaId;
+    }
+
+    public Short getType() {
+        return type;
+    }
+
+    public void setType(Short type) {
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "HiMineInfo [acquisitionTime=" + acquisitionTime + ", stressValue=" + stressValue + ", quakeValue="
+                + quakeValue + ", memo=" + memo + ", areaId=" + areaId + ", type=" + type + ", mpId=" + mpId + "]";
+    }
 }

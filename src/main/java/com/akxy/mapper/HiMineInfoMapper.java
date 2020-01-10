@@ -1,6 +1,6 @@
 package com.akxy.mapper;
 
-import com.akxy.entity.HiMineInfo;
+import com.akxy.entity.MineInfo;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -11,6 +11,6 @@ public interface HiMineInfoMapper {
 	/**
 	 * 批量插入hiMineInfo
 	 */
-	void insertGroupHi(List<HiMineInfo> listHiMineInfo);
+	void insertGroupHi(List<MineInfo> listHiMineInfo);
 	
 }

@@ -2,7 +2,6 @@ package com.akxy.init;
 
 import com.akxy.configuration.DynamicDataSourceContextHolder;
 import com.akxy.controller.DataAccessController;
-import com.akxy.entity.Quake;
 import com.akxy.mapper.QuakeMapper;
 import com.akxy.mapper.StressMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +17,20 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author wangp
+ */
 @Component
 @Slf4j
 public class AutomateRun implements ApplicationRunner {
     private long globalStep = 0;
-    static final long TIME_INTERVAL = 60000;
+    static final long TIME_INTERVAL = 30000;
 
     @Value("${custom.datasource.names}")
-    public String customDBS;
+    public String customDbs;
 
     @Autowired
     private DataAccessController dataAccessController;
@@ -40,27 +42,29 @@ public class AutomateRun implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         // 需要分析的子矿区数据库列表
-        List<String> childMines = Arrays.stream(customDBS.split(",")).filter(
-                s -> !s.equals("copy") && !s.equals("1000")
+        List<String> childMines = Arrays.stream(customDbs.split(",")).filter(
+                s -> !"copy".equals(s) && !"1000".equals(s)
         ).collect(Collectors.toList());
+        new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "keepAliveThread"))
+                .scheduleWithFixedDelay(() -> {
+                    long startTime = System.currentTimeMillis();
 
-        while (true) {
-            long startTime = System.currentTimeMillis();
-
-            boolean isHandleData = dataAccessController.readAndCalculate(childMines, globalStep++);
-            if (!isHandleData) {
-                log.info("矿区没有数据需要分析 SLEEP {} MMS", TIME_INTERVAL);
-                try {
-                    TimeUnit.MILLISECONDS.sleep(TIME_INTERVAL);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - startTime));
-        }
+                    boolean isHandleData = dataAccessController.readAndCalculate(childMines, globalStep++);
+                    if (!isHandleData) {
+                        log.info("矿区没有数据需要分析 SLEEP {} MMS", TIME_INTERVAL);
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(TIME_INTERVAL);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - startTime));
+                }, 0, 30, TimeUnit.SECONDS);
     }
 
-    // 每小时执行一次
+    /**
+     * 每小时执行一次
+     */
     @Scheduled(cron = "0 0 0/1 * * ?")
     public void deleteLastMonthData() {
         // 如果程序正常运行的话，3天内应该能处理的数据

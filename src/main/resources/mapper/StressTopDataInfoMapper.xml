@@ -85,5 +85,11 @@
         <include refid="Base_Column_List"/>
         from STRESS_TOP_DATAINFO
     </select>
+    <select id="countBy" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM STRESS_TOP_DATAINFO
+        WHERE AREA_ID = #{areaId, jdbcType = DECIMAL}
+          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+    </select>
 
 </mapper>

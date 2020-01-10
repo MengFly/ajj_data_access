@@ -1,13 +1,13 @@
 package com.akxy.util;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
+/**
+ * @author wangp
+ */
 public class TaskUtil {
 
     private ThreadPoolExecutor fixRoundExecutor;
@@ -17,7 +17,9 @@ public class TaskUtil {
 
     private TaskUtil() {
         processorsCount = Runtime.getRuntime().availableProcessors() + 1;
-        this.fixRoundExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(processorsCount * 2, new TUThreadFactory("fixed"));
+
+        this.fixRoundExecutor =
+                (ThreadPoolExecutor) Executors.newFixedThreadPool(processorsCount * 2, new TuThreadFactory("fixed"));
     }
 
     /**
@@ -73,7 +75,7 @@ public class TaskUtil {
         if (Thread.currentThread().getName().startsWith("TU-fix")) {
             if (fixRoundExecutor2 == null) {
                 fixRoundExecutor2 = (ThreadPoolExecutor)
-                        Executors.newFixedThreadPool(processorsCount * 2, new TUThreadFactory("2fix"));
+                        Executors.newFixedThreadPool(processorsCount * 2, new TuThreadFactory("2fix"));
             }
             return fixRoundExecutor2;
         }
@@ -123,22 +125,22 @@ public class TaskUtil {
         return instance;
     }
 
-    private static class TUThreadFactory implements ThreadFactory {
+    private static class TuThreadFactory implements ThreadFactory {
 
         private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger(1);
-        private final static String namePrefix = "TU";
-        private final String _namePrefix;
+        private final static String NAME_PREFIX = "TU";
+        private final String namePrefix;
 
-        public TUThreadFactory(String poolName) {
+        public TuThreadFactory(String poolName) {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            _namePrefix = namePrefix + "-" + poolName + "-";
+            namePrefix = NAME_PREFIX + "-" + poolName + "-";
         }
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r, _namePrefix + threadNumber.getAndIncrement(), 0);
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
             if (t.isDaemon()) {
                 t.setDaemon(false);
             }

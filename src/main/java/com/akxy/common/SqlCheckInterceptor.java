@@ -2,6 +2,7 @@ package com.akxy.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
@@ -9,26 +10,40 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.sql.Statement;
 import java.util.List;
 
 /**
- * Sql执行时间记录拦截器
+ * Sql执行时间记录拦截器，此拦截器会将异常的Sql进行打印，包过执行超时的，返回结果异常多的Sql
+ *
+ * @author wangp
  */
 @Intercepts({
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
+        @Signature(type = StatementHandler.class, method = "batch", args = {Statement.class})
 })
+
 @Component
 @Configuration
 @Slf4j
 public class SqlCheckInterceptor implements Interceptor {
 
-    private static final boolean debug = true;
-    private static final int limitQueryTime = 2000;// 2秒 超过两秒的sql要及进行警告
-    private static final int maxLength = 5000;// 最大的返回长度5000条数据，超过要进行警告
+    private static final boolean DEBUG = true;
+    /**
+     * 超时警告时间临界值，超过这个时间的Sql将会被打印警告
+     */
+    private static final int LIMIT_QUERY_TIME = 2000;
+    /**
+     * 返回长度警告临界值，超过这个长度的Sql将会被打印警告
+     */
+    private static final int MAX_LENGTH = 5000;
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-        if (!debug) return invocation.proceed();
+        if (!DEBUG) {
+            return invocation.proceed();
+        }
 
         long startTime = System.currentTimeMillis();
         String sql = null;
@@ -39,15 +54,15 @@ public class SqlCheckInterceptor implements Interceptor {
             }
             Object proceed = invocation.proceed();
             if (proceed instanceof List) {
-                if (((List<?>) proceed).size() > maxLength) {
-                    log.warn(">>>>>>>>> [SQL WARN:数据量过多 ({})条] -> [{}]", sql, ((List<?>) proceed).size());
+                if (((List<?>) proceed).size() > MAX_LENGTH) {
+                    log.warn(">> [SQL WARN:数据量过多 ({})条] -> [{}]", ((List<?>) proceed).size(), sql);
                 }
             }
             return proceed;
         } finally {
             long sqlCost = System.currentTimeMillis() - startTime;
-            if (sqlCost > limitQueryTime) {
-                log.warn(">>>>>>>>>> [SQL WARN:执行超过时限({})ms] -> [{}]", sql, sqlCost);
+            if (sqlCost > LIMIT_QUERY_TIME) {
+                log.warn(">> [SQL WARN:执行超过时限({})ms] -> [{}]", sqlCost, sql);
             }
         }
     }

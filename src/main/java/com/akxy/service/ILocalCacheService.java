@@ -3,13 +3,14 @@ package com.akxy.service;
 import com.akxy.entity.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ILocalCacheService {
 
     /**
      * 获取到子矿区中的工作面缓存，并且结果根据Area.id进行排序
      */
-    List<Area> getMineAreaCache(String mineDb);
+    Map<String, Area> getMineAreaCache(String mineDb);
 
     /**
      * 重载子矿区工作面缓存
@@ -37,11 +38,6 @@ public interface ILocalCacheService {
      * 重载子矿区的最新应力缓存信息
      */
     void resetStressDataCache(String mineDb);
-
-
-    List<CurMineInfo> getCurMineCache(String mineDb);
-
-    void resetCurMineCache(String mineDb);
 
     /**
      * 准备读取中间库缓存信息

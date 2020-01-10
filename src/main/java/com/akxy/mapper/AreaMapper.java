@@ -19,6 +19,8 @@ public interface AreaMapper {
 
     /**
      * 获取Area列表
+     *
+     * @return 获取所有工作面信息，以id逆向排序
      */
     List<Area> getArea();
 

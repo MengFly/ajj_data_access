@@ -3,23 +3,26 @@ package com.akxy.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author wangp
+ */
 public class DynamicDataSourceContextHolder {
-    private static final ThreadLocal<String> contextHolder = new ThreadLocal<String>();
-    public static List<String> dataSourceNames = new ArrayList<String>();
+    private static final ThreadLocal<String> CONTEXT_HOLDER = new ThreadLocal<>();
+    public static List<String> dataSourceNames = new ArrayList<>();
 
     public static void setDataSource(String dataSource) {
-        contextHolder.set(dataSource);
+        CONTEXT_HOLDER.set(dataSource);
     }
 
     public static String getDataSource() {
-        return contextHolder.get();
+        return CONTEXT_HOLDER.get();
     }
 
     /**
      * 恢复数据源
      */
     public static void restoreDataSource() {
-        contextHolder.remove();
+        CONTEXT_HOLDER.remove();
     }
 
     /**

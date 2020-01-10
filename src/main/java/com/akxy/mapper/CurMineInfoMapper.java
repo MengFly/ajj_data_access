@@ -1,7 +1,8 @@
 package com.akxy.mapper;
 
-import com.akxy.entity.CurMineInfo;
+import com.akxy.entity.MineInfo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -11,17 +12,18 @@ public interface CurMineInfoMapper {
 	/**
 	 * 遍历CURMINE_INFO表
 	 */
-	List<CurMineInfo> getAllCurMine();
+	List<MineInfo> getAllCurMine();
 	
     
 	/**
 	 * 写入预警信息
 	 */
-	void writeToCurMine(CurMineInfo curMineInfo);
+	void insertAll(List<MineInfo> curMineInfo);
 	
 	/**
 	 * 更新已存在的数据
 	 */
-	void updateCurMine(CurMineInfo curMineInfo);
-	
+	void updateCurMine(MineInfo curMineInfo);
+
+	int countByAreaIdAndMpId(@Param("areaId") Long areaId,@Param("mpId") Long mpId);
 }
