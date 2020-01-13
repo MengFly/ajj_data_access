@@ -45,7 +45,7 @@ public class AutomateRun implements ApplicationRunner {
         List<String> childMines = Arrays.stream(customDbs.split(",")).filter(
                 s -> !"copy".equals(s) && !"1000".equals(s)
         ).collect(Collectors.toList());
-        new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "keepAliveThread"))
+        new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "main"))
                 .scheduleWithFixedDelay(() -> {
                     long startTime = System.currentTimeMillis();
 

@@ -13,36 +13,19 @@
         <result column="source" jdbcType="VARCHAR" property="source"/>
         <result column="memo" jdbcType="VARCHAR" property="memo"/>
         <result column="CHCOUNT" jdbcType="DECIMAL" property="chcount"/>
-        <result column="SAMPLENGTH" jdbcType="DECIMAL"
-                property="samplength"/>
-        <result column="SAMPFREQ" jdbcType="DECIMAL"
-                property="sampfreq"/>
-        <result column="SENSORDIR" jdbcType="VARCHAR"
-                property="sensordir"/>
-        <result column="INSTALLWAY" jdbcType="VARCHAR"
-                property="installway"/>
-        <result column="SENSITIVITY" jdbcType="DECIMAL"
-                property="sensitivity"/>
-        <result column="SENSORTYPE" jdbcType="VARCHAR"
-                property="sensortype"/>
+        <result column="SAMPLENGTH" jdbcType="DECIMAL" property="samplength"/>
+        <result column="SAMPFREQ" jdbcType="DECIMAL" property="sampfreq"/>
+        <result column="SENSORDIR" jdbcType="VARCHAR" property="sensordir"/>
+        <result column="INSTALLWAY" jdbcType="VARCHAR" property="installway"/>
+        <result column="SENSITIVITY" jdbcType="DECIMAL" property="sensitivity"/>
+        <result column="SENSORTYPE" jdbcType="VARCHAR" property="sensortype"/>
         <result column="POSDESC" jdbcType="VARCHAR" property="posdesc"/>
-        <result column="MAXSWING" jdbcType="DECIMAL"
-                property="maxswing"/>
-        <result column="AVGSWING" jdbcType="DECIMAL"
-                property="avgswing"/>
-        <result column="BASICFREQ" jdbcType="DECIMAL"
-                property="basicfreq"/>
+        <result column="MAXSWING" jdbcType="DECIMAL" property="maxswing"/>
+        <result column="AVGSWING" jdbcType="DECIMAL" property="avgswing"/>
+        <result column="BASICFREQ" jdbcType="DECIMAL" property="basicfreq"/>
         <result column="TRIGCH" jdbcType="VARCHAR" property="trigch"/>
-        <result column="EXCSTATUS" jdbcType="VARCHAR"
-                property="excstatus"/>
+        <result column="EXCSTATUS" jdbcType="VARCHAR" property="excstatus"/>
     </resultMap>
-    <sql id="Base_Column_List">
-        COLLECT_TIME, X, Y, Z, ENERGY, AREA_ID, SOURCE, MEMO, CHCOUNT, SAMPLENGTH,
-		SAMPFREQ,
-		SENSORDIR, INSTALLWAY, SENSITIVITY, SENSORTYPE, POSDESC, MAXSWING, AVGSWING,
-		BASICFREQ,
-		TRIGCH, EXCSTATUS
-    </sql>
 
     <!-- 批量插入POSRESULT -->
     <insert id="insertGroupData" parameterType="java.util.List">
@@ -53,8 +36,7 @@
         SENSITIVITY, SENSORTYPE, POSDESC,
         MAXSWING, AVGSWING, BASICFREQ,
         TRIGCH, EXCSTATUS)
-        <foreach collection="list" item="item" index="index"
-                 separator="UNION">
+        <foreach collection="list" item="item" index="index" separator="UNION">
             SELECT
             #{item.collectTime,jdbcType=TIMESTAMP},
             #{item.x,jdbcType=FLOAT},

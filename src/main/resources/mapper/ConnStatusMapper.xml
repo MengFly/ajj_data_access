@@ -15,8 +15,7 @@
     <insert id="insertGroupData" parameterType="java.util.List">
         insert into CONN_STATUS (MINE_NAME, MINE_CODE, TYPE,
         CONN_STATUS, WARNING_DETAIL, ACQUIRE_TIME,MEMO)
-        <foreach collection="list" item="item" index="index" open="("
-                 separator="union" close=")">
+        <foreach collection="list" item="item" index="index" open="(" separator="union" close=")">
             SELECT
             #{item.mineName,jdbcType=VARCHAR},
             #{item.mineCode,jdbcType=VARCHAR},

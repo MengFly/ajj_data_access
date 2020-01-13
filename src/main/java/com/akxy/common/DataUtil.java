@@ -240,9 +240,8 @@ public class DataUtil {
             log.info(">> [{}-{}] 应力Top需新增({})条，成功新增({})条", customDb, mineName, needInsertTopInfos.size(), insertCount);
         }
         if (!needUpdateTopInfos.isEmpty()) {
-            needUpdateTopInfos.values().forEach(stressTopDataInfo -> {
-                stressTopDataInfoMapper.updateTopData(stressTopDataInfo);
-            });
+            needUpdateTopInfos.values().forEach(stressTopDataInfo ->
+                    stressTopDataInfoMapper.updateTopData(stressTopDataInfo));
             log.info(">> [{}-{}] 应力Top更新({}) 条", customDb, mineName, needUpdateTopInfos.size());
         }
 
@@ -339,7 +338,7 @@ public class DataUtil {
             connStatus.setConnStatus("0");
         }
 
-        if (String.valueOf(warnValue) == null) {
+        if (warnValue == null) {
             connStatus.setWarningDetail("无数据");
         } else {
             connStatus.setWarningDetail(String.valueOf(warnValue));

@@ -18,6 +18,7 @@
     </resultMap>
 
     <!-- 获取全矿预警 -->
+    <!--    todo 这里获取全矿预警的地方应该是获取不到数据的，AreaId应该是零吗？-->
     <select id="findAreaValue" resultType="java.lang.Short">
         SELECT AREA_VALUE
         FROM AREA_TOP_DATA_INFO

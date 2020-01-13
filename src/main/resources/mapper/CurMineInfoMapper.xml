@@ -44,8 +44,8 @@
 
     <!-- 遍历CURMINE_INFO表 -->
     <select id="getAllCurMine" resultMap="BaseResultMap">
-        select AREA_ID, MP_ID
-        from CURMINE_INFO
+        SELECT AREA_ID, MP_ID
+        FROM CURMINE_INFO
     </select>
     <select id="countByAreaIdAndMpId" resultType="java.lang.Integer">
         SELECT COUNT(*)

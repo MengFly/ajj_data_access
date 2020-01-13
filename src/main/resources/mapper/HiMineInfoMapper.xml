@@ -10,12 +10,11 @@
         <result column="quake_value" jdbcType="FLOAT" property="quakeValue"/>
         <result column="memo" jdbcType="VARCHAR" property="memo"/>
     </resultMap>
-	
+
     <!-- 批量插入insertGroupHi -->
     <insert id="insertGroupHi" parameterType="java.util.List">
         insert into HIMINE_INFO (MP_ID,AREA_ID,TYPE,ACQUISITION_TIME,STRESS_VALUE,QUAKE_VALUE,MEMO)
-        <foreach collection="list" item="item" index="index" open="("
-                 separator="union" close=")">
+        <foreach collection="list" item="item" index="index" open="(" separator="union" close=")">
             SELECT
             #{item.mpId,jdbcType=DECIMAL},
             #{item.areaId,jdbcType=DECIMAL},

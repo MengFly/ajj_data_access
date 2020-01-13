@@ -4,8 +4,6 @@ import com.akxy.common.SqlCheckInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -29,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.mybatis.spring.mapper.MapperScannerConfigurer;
 
 /**
  * 动态数据源注册<br/>
@@ -39,7 +36,7 @@ import java.util.Map;
  * @author wangp
  */
 @Slf4j
-@Configuration // 该注解类似于spring配置文件
+@Configuration
 public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 	/**
 	 * 默认的数据源类型
@@ -139,6 +136,9 @@ public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar,
     private void initCustomDataSources(Environment env) {
         RelaxedPropertyResolver resolver = new RelaxedPropertyResolver(env, "custom.datasource.");
         String dataSourceNames = resolver.getProperty("names");
+        if(dataSourceNames == null) {
+            return;
+        }
         this.dataSources = dataSourceNames;
         for (String dsName : dataSourceNames.split(",")) {
             Map<String, Object> properties = resolver.getSubProperties(dsName + ".");

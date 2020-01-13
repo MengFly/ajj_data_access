@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
+/**
+ * @author wangp
+ */
 @Mapper
 public interface AreaMapper {
 

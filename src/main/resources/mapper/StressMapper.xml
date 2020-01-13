@@ -3,29 +3,18 @@
 <mapper namespace="com.akxy.mapper.StressMapper">
     <resultMap id="BaseResultMap" type="com.akxy.entity.Stress">
         <id column="ID" property="id" jdbcType="DECIMAL"/>
-        <result column="COLLECTIONTIME" property="collectiontime"
-                jdbcType="TIMESTAMP"/>
-        <result column="MINECODE" property="minecode"
-                jdbcType="VARCHAR"/>
-        <result column="AREANAME" property="areaname"
-                jdbcType="VARCHAR"/>
-        <result column="AREATYPE" property="areatype"
-                jdbcType="VARCHAR"/>
-        <result column="SYSTEMNAME" property="systemname"
-                jdbcType="VARCHAR"/>
-        <result column="SYSTEMTYPE" property="systemtype"
-                jdbcType="VARCHAR"/>
-        <result column="STRESSTYPE" property="stresstype"
-                jdbcType="VARCHAR"/>
+        <result column="COLLECTIONTIME" property="collectiontime" jdbcType="TIMESTAMP"/>
+        <result column="MINECODE" property="minecode" jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaname" jdbcType="VARCHAR"/>
+        <result column="AREATYPE" property="areatype" jdbcType="VARCHAR"/>
+        <result column="SYSTEMNAME" property="systemname" jdbcType="VARCHAR"/>
+        <result column="SYSTEMTYPE" property="systemtype" jdbcType="VARCHAR"/>
+        <result column="STRESSTYPE" property="stresstype" jdbcType="VARCHAR"/>
         <result column="RTVPOS" property="rtvpos" jdbcType="VARCHAR"/>
-        <result column="INSTALLTIME" property="installtime"
-                jdbcType="TIMESTAMP"/>
-        <result column="STRESSNO" property="stressno"
-                jdbcType="VARCHAR"/>
-        <result column="STRESSDIR" property="stressdir"
-                jdbcType="VARCHAR"/>
-        <result column="TUNNELNAME" property="tunnelname"
-                jdbcType="VARCHAR"/>
+        <result column="INSTALLTIME" property="installtime" jdbcType="TIMESTAMP"/>
+        <result column="STRESSNO" property="stressno" jdbcType="VARCHAR"/>
+        <result column="STRESSDIR" property="stressdir" jdbcType="VARCHAR"/>
+        <result column="TUNNELNAME" property="tunnelname" jdbcType="VARCHAR"/>
         <result column="NAME" property="name" jdbcType="VARCHAR"/>
         <result column="VALUE" property="value" jdbcType="FLOAT"/>
         <result column="X" property="x" jdbcType="FLOAT"/>
@@ -33,13 +22,10 @@
         <result column="Z" property="z" jdbcType="FLOAT"/>
         <result column="DEPTH" property="depth" jdbcType="FLOAT"/>
         <result column="DISTANCE" property="distance" jdbcType="FLOAT"/>
-        <result column="INITIALVALUE" property="initialvalue"
-                jdbcType="FLOAT"/>
+        <result column="INITIALVALUE" property="initialvalue" jdbcType="FLOAT"/>
         <result column="REDWARN" property="redwarn" jdbcType="FLOAT"/>
-        <result column="YELLOWWARN" property="yellowwarn"
-                jdbcType="FLOAT"/>
-        <result column="WARNRECORD" property="warnrecord"
-                jdbcType="VARCHAR"/>
+        <result column="YELLOWWARN" property="yellowwarn" jdbcType="FLOAT"/>
+        <result column="WARNRECORD" property="warnrecord" jdbcType="VARCHAR"/>
         <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="Base_Column_List">
@@ -49,72 +35,6 @@
 		DEPTH,
 		DISTANCE, INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, MEMO
     </sql>
-    <select id="selectByPrimaryKey" resultMap="BaseResultMap"
-            parameterType="java.lang.Integer">
-        select
-        <include refid="Base_Column_List"/>
-        from STRESS
-        where ID = #{id,jdbcType=DECIMAL}
-    </select>
-    <delete id="deleteByPrimaryKey"
-            parameterType="java.lang.Integer">
-        delete
-        from STRESS
-        where ID = #{id,jdbcType=DECIMAL}
-    </delete>
-    <insert id="insert" parameterType="com.akxy.entity.Stress">
-        insert into STRESS (ID, COLLECTIONTIME, MINECODE,
-                            AREANAME, AREATYPE, SYSTEMNAME,
-                            SYSTEMTYPE, STRESSTYPE, RTVPOS,
-                            INSTALLTIME, STRESSNO, STRESSDIR,
-                            TUNNELNAME, NAME, VALUE,
-                            X, Y, Z, DEPTH,
-                            DISTANCE, INITIALVALUE, REDWARN,
-                            YELLOWWARN, WARNRECORD, MEMO)
-        values (#{id,jdbcType=DECIMAL}, #{collectiontime,jdbcType=TIMESTAMP},
-                #{minecode,jdbcType=VARCHAR},
-                #{areaname,jdbcType=VARCHAR}, #{areatype,jdbcType=VARCHAR}, #{systemname,jdbcType=VARCHAR},
-                #{systemtype,jdbcType=VARCHAR}, #{stresstype,jdbcType=VARCHAR},
-                #{rtvpos,jdbcType=VARCHAR},
-                #{installtime,jdbcType=TIMESTAMP}, #{stressno,jdbcType=VARCHAR}, #{stressdir,jdbcType=VARCHAR},
-                #{tunnelname,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
-                #{value,jdbcType=FLOAT},
-                #{x,jdbcType=DECIMAL}, #{y,jdbcType=DECIMAL}, #{z,jdbcType=DECIMAL},
-                #{depth,jdbcType=FLOAT},
-                #{distance,jdbcType=FLOAT}, #{initialvalue,jdbcType=FLOAT}, #{redwarn,jdbcType=FLOAT},
-                #{yellowwarn,jdbcType=FLOAT}, #{warnrecord,jdbcType=VARCHAR},
-                #{memo,jdbcType=VARCHAR})
-    </insert>
-
-    <update id="updateByPrimaryKey"
-            parameterType="com.akxy.entity.Stress">
-        update STRESS
-        set COLLECTIONTIME = #{collectiontime,jdbcType=TIMESTAMP},
-            MINECODE       = #{minecode,jdbcType=VARCHAR},
-            AREANAME       = #{areaname,jdbcType=VARCHAR},
-            AREATYPE       = #{areatype,jdbcType=VARCHAR},
-            SYSTEMNAME     = #{systemname,jdbcType=VARCHAR},
-            SYSTEMTYPE     = #{systemtype,jdbcType=VARCHAR},
-            STRESSTYPE     = #{stresstype,jdbcType=VARCHAR},
-            RTVPOS         = #{rtvpos,jdbcType=VARCHAR},
-            INSTALLTIME    = #{installtime,jdbcType=TIMESTAMP},
-            STRESSNO       = #{stressno,jdbcType=VARCHAR},
-            STRESSDIR      = #{stressdir,jdbcType=VARCHAR},
-            TUNNELNAME     = #{tunnelname,jdbcType=VARCHAR},
-            NAME           = #{name,jdbcType=VARCHAR},
-            VALUE          = #{value,jdbcType=FLOAT},
-            X              = #{x,jdbcType=DECIMAL},
-            Y              = #{y,jdbcType=DECIMAL},
-            Z              = #{z,jdbcType=DECIMAL},
-            DEPTH          = #{depth,jdbcType=FLOAT},
-            DISTANCE       = #{distance,jdbcType=FLOAT},
-            INITIALVALUE   = #{initialvalue,jdbcType=FLOAT},
-            REDWARN        = #{redwarn,jdbcType=FLOAT},
-            YELLOWWARN     = #{yellowwarn,jdbcType=FLOAT},
-            WARNRECORD     = #{warnrecord,jdbcType=VARCHAR},
-            MEMO           = #{memo,jdbcType=VARCHAR}
-        where ID = #{id,jdbcType=DECIMAL}
-    </update>
 
     <!-- 从中间库读取Stress数据 WHERE ROWNUM <![CDATA[ <= ]]> 1000 -->
     <select id="readStressData" resultMap="BaseResultMap">
@@ -124,18 +44,7 @@
         (SELECT
         <include refid="Base_Column_List"/>
         FROM STRESS WHERE
-        MINECODE =#{customDB,jdbcType=VARCHAR} ORDER BY COLLECTIONTIME ASC ) WHERE ROWNUM <![CDATA[ <= ]]>1000
-    </select>
-
-    <!-- 从中间库获取每个测点标志 -->
-    <select id="getPointSignList"
-            resultType="com.akxy.entity.PointSign">
-        SELECT TUNNELNAME, DEPTH, DISTANCE
-        from STRESS
-        WHERE MINECODE =
-              #{customDB,jdbcType=VARCHAR}
-          AND ROWNUM &lt;= 1000
-        ORDER BY COLLECTIONTIME ASC
+        MINECODE =#{customDB,jdbcType=VARCHAR} ORDER BY COLLECTIONTIME ) WHERE ROWNUM <![CDATA[ <= ]]>1000
     </select>
 
     <!-- 根据去重的标志获取Top表所需测点 -->
@@ -146,30 +55,6 @@
         TUNNELNAME=#{tunnelName,jdbcType=VARCHAR}
         AND DEPTH=#{depth,jdbcType=FLOAT} AND DISTANCE=#{distance,jdbcType=FLOAT}
         AND ROWNUM=1 ORDER BY 'COLLECTIONTIME' DESC
-    </select>
-
-    <!-- 取STRESS表每个测点最新的预警信息 -->
-    <select id="getCurWarnStress" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM (SELECT
-        <include refid="Base_Column_List"/>
-        from STRESS WHERE TUNNELNAME=#{tunnelName,jdbcType=VARCHAR}
-        AND DEPTH=#{depth,jdbcType=FLOAT} AND DISTANCE=#{distance,jdbcType=FLOAT}
-        AND "VALUE" >=9 ORDER BY COLLECTIONTIME DESC)
-        WHERE ROWNUM=1
-    </select>
-
-    <!-- 获取所有预警数据 -->
-    <select id="getAllWarnStress" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List"/>
-        from STRESS where "VALUE">=9
-    </select>
-
-    <!-- 获取位置不重复的应力信息 -->
-    <select id="getDistince" resultMap="BaseResultMap">
-        <!-- 待完善 -->
     </select>
 
     <!-- 获取STRESS和Quake表中所有的AreaName -->
@@ -200,24 +85,11 @@
         </foreach>
     </delete>
 
-    <!-- 删除所有Stress数据 -->
-    <delete id="truncateAll">
-        TRUNCATE TABLE STRESS
-    </delete>
     <delete id="deleteByTimeLessThan">
         DELETE
         FROM STRESS
         WHERE COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
     </delete>
-
-    <!-- 根据AreaName获取最大value值 -->
-    <select id="getValueByName" resultType="java.lang.Double">
-        SELECT "VALUE"
-        FROM STRESS
-        WHERE AREANAME = #{areaName,jdbcType=VARCHAR}
-          AND ROWNUM = 1
-        ORDER BY "VALUE" DESC
-    </select>
 
     <select id="stressCount" resultType="java.lang.Integer">
         SELECT COUNT(1)

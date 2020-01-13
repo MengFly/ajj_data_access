@@ -2,7 +2,6 @@ package com.akxy.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
@@ -10,7 +9,6 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -20,8 +18,7 @@ import java.util.List;
  */
 @Intercepts({
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
-        @Signature(type = StatementHandler.class, method = "batch", args = {Statement.class})
+        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
 })
 
 @Component

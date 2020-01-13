@@ -20,13 +20,6 @@ public interface StressMapper {
     List<Stress> readStressData(@Param("customDB") String customDB);
 
     /**
-     * 从中间库获取每个测点标志
-     *
-     * @return
-     */
-    List<PointSign> getPointSignList(@Param("customDB") String customDB);
-
-    /**
      * 根据去重的标志获取Top表所需测点
      *
      * @param tunnelName 巷道名
@@ -36,31 +29,6 @@ public interface StressMapper {
      */
     Stress getDistinctPoint(@Param("customDB") String customDB, @Param("tunnelName") String tunnelName,
                             @Param("depth") Double depth, @Param("distance") Double distance);
-
-    /**
-     * 取STRESS表每个测点最新的预警信息
-     *
-     * @param tunnelName 巷道名
-     * @param depth      深度
-     * @param distance   距离
-     * @return
-     */
-    Stress getCurWarnStress(@Param("tunnelName") String tunnelName, @Param("depth") Double depth,
-                            @Param("distance") Double distance);
-
-    /**
-     * 获取所有预警数据
-     *
-     * @return
-     */
-    List<Stress> getAllWarnStress();
-
-    /**
-     * 获取位置不重复的应力信息
-     *
-     * @return
-     */
-    List<Stress> getDistince();
 
     /**
      * 获取STRESS、QUAKE表中所有的AreaName
@@ -75,16 +43,6 @@ public interface StressMapper {
      * @param listStress
      */
     int deleteGroupData(List<Stress> listStress);
-
-    /**
-     * 删除所有Stress数据
-     */
-    void truncateAll();
-
-    /**
-     * 根据AreaName获取最大value值
-     */
-    Double getValueByName(@Param("areaName") String areaName);
 
     Integer stressCount();
 

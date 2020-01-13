@@ -13,8 +13,6 @@ import java.util.List;
 @Mapper
 public interface StressDataInfoMapper {
 
-    void deleteDataInfos(List<StressDataInfo> list);
-
     /**
      * 批量插入STRESS_DATAINFO数据
      * @param listStressDataInfos 需要存入的应力数据列表

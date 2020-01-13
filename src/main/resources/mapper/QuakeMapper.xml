@@ -3,25 +3,16 @@
 <mapper namespace="com.akxy.mapper.QuakeMapper">
     <resultMap id="BaseResultMap" type="com.akxy.entity.Quake">
         <id column="ID" property="id" jdbcType="DECIMAL"/>
-        <result column="COLLECTIONTIME" property="collectiontime"
-                jdbcType="TIMESTAMP"/>
-        <result column="MINECODE" property="minecode"
-                jdbcType="VARCHAR"/>
-        <result column="AREANAME" property="areaname"
-                jdbcType="VARCHAR"/>
+        <result column="COLLECTIONTIME" property="collectiontime" jdbcType="TIMESTAMP"/>
+        <result column="MINECODE" property="minecode" jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaname" jdbcType="VARCHAR"/>
         <result column="CHCOUNT" property="chcount" jdbcType="DECIMAL"/>
-        <result column="SAMPLENGTH" property="samplength"
-                jdbcType="DECIMAL"/>
-        <result column="SAMPFREQ" property="sampfreq"
-                jdbcType="DECIMAL"/>
-        <result column="SENSORDIR" property="sensordir"
-                jdbcType="VARCHAR"/>
-        <result column="INSTALLWAY" property="installway"
-                jdbcType="VARCHAR"/>
-        <result column="SENSITIVITY" property="sensitivity"
-                jdbcType="FLOAT"/>
-        <result column="SENSORTYPE" property="sensortype"
-                jdbcType="VARCHAR"/>
+        <result column="SAMPLENGTH" property="samplength" jdbcType="DECIMAL"/>
+        <result column="SAMPFREQ" property="sampfreq" jdbcType="DECIMAL"/>
+        <result column="SENSORDIR" property="sensordir" jdbcType="VARCHAR"/>
+        <result column="INSTALLWAY" property="installway" jdbcType="VARCHAR"/>
+        <result column="SENSITIVITY" property="sensitivity" jdbcType="FLOAT"/>
+        <result column="SENSORTYPE" property="sensortype" jdbcType="VARCHAR"/>
         <result column="X" property="x" jdbcType="FLOAT"/>
         <result column="Y" property="y" jdbcType="FLOAT"/>
         <result column="Z" property="z" jdbcType="FLOAT"/>
@@ -30,11 +21,9 @@
         <result column="POSDESC" property="posdesc" jdbcType="VARCHAR"/>
         <result column="MAXSWING" property="maxswing" jdbcType="FLOAT"/>
         <result column="AVGSWING" property="avgswing" jdbcType="FLOAT"/>
-        <result column="BASICFREQ" property="basicfreq"
-                jdbcType="FLOAT"/>
+        <result column="BASICFREQ" property="basicfreq" jdbcType="FLOAT"/>
         <result column="TRIGCH" property="trigch" jdbcType="VARCHAR"/>
-        <result column="EXCSTATUS" property="excstatus"
-                jdbcType="VARCHAR"/>
+        <result column="EXCSTATUS" property="excstatus" jdbcType="VARCHAR"/>
         <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="Base_Column_List">
@@ -44,17 +33,19 @@
 		AVGSWING,
 		BASICFREQ, TRIGCH, EXCSTATUS, MEMO
     </sql>
-    
+
     <!-- 从中间库读取Quake数据 -->
     <select id="readQuakeData" resultMap="BaseResultMap">
-        SELECT *
-        FROM (SELECT *
-              FROM QUAKE
-              WHERE MINECODE = #{customDB,jdbcType=VARCHAR}
-                AND X <![CDATA[ <> ]]> 0
-                AND Y <![CDATA[ <> ]]> 0
-                AND Z <![CDATA[ <> ]]> 0
-              ORDER BY COLLECTIONTIME ASC)
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM (SELECT
+        <include refid="Base_Column_List"/>
+        FROM QUAKE
+        WHERE MINECODE = #{customDB,jdbcType=VARCHAR}
+        AND X <![CDATA[ <> ]]> 0
+        AND Y <![CDATA[ <> ]]> 0
+        AND Z <![CDATA[ <> ]]> 0
+        ORDER BY COLLECTIONTIME)
         WHERE ROWNUM &lt;= 1000
     </select>
 

@@ -9,23 +9,19 @@
         <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
         <result column="TYPE" jdbcType="VARCHAR" property="type"/>
     </resultMap>
-
-    <sql id="Base_Column_List">
-        "ID","NAME",POS_LIST,ISMONITOR,"TYPE",MEMO
-    </sql>
-
+    
     <!-- 向Area表中添加数据 -->
     <insert id="insertData" parameterType="com.akxy.entity.Area">
-        INSERT INTO AREA (id, name, pos_list, ismonitor, memo, TYPE)
+        INSERT INTO AREA (ID, NAME, POS_LIST, ISMONITOR, MEMO, TYPE)
         VALUES (#{id,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR}, #{posList,jdbcType=VARCHAR},
                 #{ismonitor,jdbcType=DECIMAL}, #{memo,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR})
     </insert>
 
     <!-- 获取Area列表 -->
     <select id="getArea" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM AREA ORDER BY ID DESC
+        SELECT ID, NAME, POS_LIST, ISMONITOR, MEMO, TYPE
+        FROM AREA
+        ORDER BY ID DESC
     </select>
 
 </mapper>

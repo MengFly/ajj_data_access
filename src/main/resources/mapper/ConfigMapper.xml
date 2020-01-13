@@ -12,7 +12,7 @@
 
     <!-- 获取配置信息 -->
     <select id="getConfigInfo" resultMap="BaseResultMap">
-        SELECT *
+        SELECT TYPE, NAME, SEQUENCE, STR_VALUE, INT_VALUE, MEMO
         FROM CONFIG
         WHERE TYPE = #{type,jdbcType=VARCHAR}
           AND NAME = #{name,jdbcType=VARCHAR}

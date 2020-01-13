@@ -10,6 +10,7 @@ public interface ConnStatusMapper {
 
     /**
      * 批量插入CONN_STATUS
+     * @param connStatus connStatus
      */
     void insertGroupData(List<ConnStatus> connStatus);
 }
