@@ -44,30 +44,34 @@ public class TaskUtil {
         int taskCount = childTaskReses.size();
         CountDownLatch begin = new CountDownLatch(1);
         CountDownLatch end = new CountDownLatch(taskCount);
-        for (int i = 0; i < childTaskReses.size(); i++) {
-            // 如果存在线程嵌套问题，那么把线程丢进Cache线程池中，防止阻塞发生
-            List<E> childTaskRe = childTaskReses.get(i);
-            int location = i;
-            Runnable runnable = () -> {
-                try {
-                    begin.await();
-                    childTaskLogic.accept(childTaskRe, location);
-                } catch (InterruptedException e) {
-                    if (exceptionHandler != null) {
-                        exceptionHandler.accept(location, e);
-                    }
-                    e.printStackTrace();
-                } finally {
-                    end.countDown();
-                }
-            };
-            getExecutor().execute(runnable);
-        }
         try {
+            for (int i = 0; i < childTaskReses.size(); i++) {
+                // 如果存在线程嵌套问题，那么把线程丢进Cache线程池中，防止阻塞发生
+                List<E> childTaskRe = childTaskReses.get(i);
+                int location = i;
+                Runnable runnable = () -> {
+                    try {
+                        begin.await();
+                        childTaskLogic.accept(childTaskRe, location);
+                    } catch (InterruptedException e) {
+                        if (exceptionHandler != null) {
+                            exceptionHandler.accept(location, e);
+                        }
+                        e.printStackTrace();
+                    } finally {
+                        end.countDown();
+                    }
+                };
+                getExecutor().execute(runnable);
+            }
+
+        } finally {
             begin.countDown();
-            end.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                end.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
