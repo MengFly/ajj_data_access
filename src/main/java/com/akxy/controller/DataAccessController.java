@@ -45,7 +45,6 @@ public class DataAccessController {
             } else {
                 log.info(">> [{}-{}] 查询到 -> 应力({})条，微震({})条", customDb, mineName,
                         midStressCache.size(), midQuakeCache.size());
-                iDataAccessService.copyDbToLocal(customDb, mineName);
                 iDataAccessService.configArea(primaryDb, customDb, mineName);
                 iDataAccessService.writeNotExistsMeasurePoint(customDb, mineName);
                 iDataAccessService.readAndCalculateStress(primaryDb, customDb, mineName);

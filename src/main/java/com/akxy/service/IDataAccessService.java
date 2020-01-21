@@ -5,10 +5,6 @@ package com.akxy.service;
  */
 public interface IDataAccessService {
 
-    /**
-     * copy中间库到本地
-     */
-    void copyDbToLocal(String customDb, String mineName);
 
     /**
      * 从数据库读取,计算Stress数据

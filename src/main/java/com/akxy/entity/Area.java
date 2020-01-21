@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @ToString
@@ -14,7 +16,7 @@ public class Area {
 
     private String posList;
 
-    private Short ismonitor;
+    private Long monitor;
 
     private String memo;
 
@@ -24,8 +26,8 @@ public class Area {
         Area area = new Area();
         area.setId(id);
         area.setName(name);
-        area.setPosList(" ");
-        area.setIsmonitor((short) 1);
+        area.setPosList("0");
+        area.setMonitor(1L);
         area.setType(type);
         area.setMemo(memo);
         return area;

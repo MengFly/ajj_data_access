@@ -3,6 +3,7 @@ package com.akxy.mapper;
 
 import com.akxy.entity.Area;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

@@ -7,7 +7,6 @@ import com.akxy.mapper.*;
 import com.akxy.service.IDataAccessService;
 import com.akxy.service.ILocalCacheService;
 import com.akxy.util.AreaUtil;
-import com.akxy.util.TaskUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,37 +55,13 @@ public class DataAccessServiceImpl implements IDataAccessService {
     @Autowired
     private DataUtil dataService;
 
-
-    @Override
-    public void copyDbToLocal(String customDb, String mineName) {
-        List<Stress> listStress = localCacheService.getMidStressCache(customDb);
-        List<Quake> listQuakes = localCacheService.getMidQuakeCache(customDb);
-
-        if (!listStress.isEmpty()) {
-            log.info(">> [{}-{}] 开始拷贝应力数据", customDb, mineName);
-            TaskUtil.getInstance().splitTaskExec(listStress, 500, (stresses, i) -> {
-                DynamicDataSourceContextHolder.setDataSource("copy");
-                stressCopyMapper.copyStress(stresses);
-            });
-            log.info(">> [{}-{}] 应力数据拷贝完成", customDb, mineName);
-        }
-
-        if (!listQuakes.isEmpty()) {
-            log.info(">> [{}-{}] 开始拷贝微震数据", customDb, mineName);
-            TaskUtil.getInstance().splitTaskExec(listQuakes, 500, (quakes, i) -> {
-                DynamicDataSourceContextHolder.setDataSource("copy");
-                quakeCopyMapper.copyQuake(quakes);
-            });
-            log.info(">> [{}-{}] 微震数据拷贝完成", customDb, mineName);
-        }
-    }
-
     @Override
     public void configArea(String primaryDb, String customDb, String mineName) {
         // 目前子矿区中的工作面列表
         Map<String, Area> existAreas = localCacheService.getMineAreaCache(customDb);
         List<String> areaNames = localCacheService.getMidAreaNameCache(customDb);
         List<Long> areaIds = existAreas.values().stream().map(Area::getId).collect(Collectors.toList());
+        DynamicDataSourceContextHolder.setDataSource(customDb);
         int addedAreaCount = 0;
         if (areaIds.isEmpty()) {
             addedAreaCount++;
@@ -98,7 +73,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
             // 如果此工作面不存在于矿区数据库中才进行存储，id为（最大id+1）
             if (!existAreas.containsKey(areaName)) {
                 addedAreaCount++;
-                Area area = Area.newInstance(areaIds.get(0) + 1, areaName, "1", " ");
+                Area area = Area.newInstance(areaIds.get(0) + 1, areaName, "1", "1");
                 areaMapper.insertData(area);
                 areaIds.add(0, area.getId());
             }
@@ -142,7 +117,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
     private List<StressDataInfo> saveStressHistoryData(String customDb, String mineName, List<StressDataInfo> stressDataInfos) {
         // 空值和应力值小于30的才进行存储
         List<StressDataInfo> stressInfos = stressDataInfos.stream()
-                .filter(info -> info.getpValue() <= 30 && info.getAcquisitionTime() != null).collect(Collectors.toList());
+                .filter(info -> info.getPValue() <= 30 && info.getAcquisitionTime() != null).collect(Collectors.toList());
 
         if (stressInfos.isEmpty()) {
             log.info(">> [{}-{}] 无符合的应力历史数据需要存储", customDb, mineName);
@@ -220,7 +195,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
     public void writeWarnMineInfo(String customDb, String mineName, List<StressDataInfo> stresses) {
         // 应力值大于9的进行预警
         List<MineInfo> warnMineInfo = stresses.stream()
-                .filter(stress -> stress.getpValue() >= 9)
+                .filter(stress -> stress.getPValue() >= 9)
                 .map(dataService::getHiMineInfo).collect(Collectors.toList());
 
         log.info(">> [{}-{}] 预警应力个数({})条", customDb, mineName, warnMineInfo.size());
@@ -319,9 +294,9 @@ public class DataAccessServiceImpl implements IDataAccessService {
             } else {
                 point.setId(sortedMpIds.get(0) + 1);
             }
-            if (!signList.contains(point.getTunnelName() + point.getDepth() + point.getDistance())) {
+            if (!signList.contains(dataService.getPointSign(point))) {
                 stressMeasurePointMapper.writeMeasurePoint(point);
-                signList.add(point.getTunnelName() + point.getDepth() + point.getDistance());
+                signList.add(dataService.getPointSign(point));
             }
             sortedMpIds.add(0, point.getId());
         });

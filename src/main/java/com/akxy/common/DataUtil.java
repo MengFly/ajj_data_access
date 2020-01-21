@@ -50,14 +50,14 @@ public class DataUtil {
         // 测点标识，用于检查测点是否已经处理过了
         Set<String> signList = new HashSet<>();
         for (Stress stress : stresses) {
-            String sign = stress.getTunnelname() + stress.getDepth() + stress.getDistance();
+            String sign = getPointSign(stress);
             // 已经处理过的测点不处理
             if (signList.contains(sign)) {
                 continue;
             }
             // 已经存在过的测点不处理
-            boolean mpIsExists = exitsStressMp.stream().anyMatch(
-                    point -> (point.getTunnelName() + point.getDepth() + point.getDistance()).equals(sign));
+            boolean mpIsExists = exitsStressMp.stream().parallel().anyMatch(
+                    point -> Objects.equals(sign, getPointSign(point)));
             if (mpIsExists) {
                 signList.add(sign);
                 continue;
@@ -73,11 +73,21 @@ public class DataUtil {
         return returnPoints;
     }
 
+    public String getPointSign(StressMeasurePoint point) {
+        return ParseUtil.getOrDefault(point.getTunnelName(), "巷道")
+                + point.getDistance() + point.getDepth();
+    }
+
+    public String getPointSign(Stress stress) {
+        return ParseUtil.getOrDefault(stress.getTunnelname(), "巷道")
+                + stress.getDistance() + stress.getDepth();
+    }
+
     public static StressMeasurePoint getStressMeasurePoint(Stress stress, Long mpAreaId) {
         StressMeasurePoint stressMeasurePoint = new StressMeasurePoint();
         stressMeasurePoint.setAreaId(mpAreaId);
         stressMeasurePoint.setName(stress.getName());
-        stressMeasurePoint.setTunnelName(stress.getTunnelname());
+        stressMeasurePoint.setTunnelName(ParseUtil.getOrDefault(stress.getTunnelname(), "巷道"));
         stressMeasurePoint.setX(stress.getX());
         stressMeasurePoint.setY(stress.getY());
         stressMeasurePoint.setZ(stress.getZ());
@@ -119,7 +129,7 @@ public class DataUtil {
             stressDataInfo.setDistance(BigDecimal.valueOf(stress.getDistance()));
             stressDataInfo.setMemo("0");
             stressDataInfo.setMpName(stress.getName());
-            stressDataInfo.setpValue(stress.getValue());
+            stressDataInfo.setPValue(stress.getValue());
             stressDataInfo.setX(stress.getX());
             stressDataInfo.setY(stress.getY());
             stressDataInfo.setZ(stress.getZ());
@@ -178,9 +188,7 @@ public class DataUtil {
             StressDataInfo stressDataInfo = getStressDataInfo(customDb, areas, stress);
             if (stressDataInfo != null) {
                 StressMeasurePoint stressMeasurePoint = stressMeasurePoints.stream()
-                        .filter(point -> Objects.equals(point.getTunnelName(), stress.getTunnelname()) &&
-                                Objects.equals(point.getDepth(), stress.getDepth()) &&
-                                Objects.equals(point.getDistance(), stress.getDepth()))
+                        .filter(point -> Objects.equals(getPointSign(point), getPointSign(stress)))
                         .findFirst().orElse(null);
                 Long stressMpId;
                 if (stressMeasurePoint == null) {
@@ -189,7 +197,7 @@ public class DataUtil {
                 } else {
                     stressMpId = stressMeasurePoint.getId();
                 }
-                stressDataInfo.setMpId(stressMpId);
+                stressDataInfo.setMpId(ParseUtil.getOrDefault(stressMpId, 0L));
                 listStressDataInfos.add(stressDataInfo);
             }
         });
@@ -256,7 +264,7 @@ public class DataUtil {
         hiMineInfo.setAreaId(stress.getAreaId());
         hiMineInfo.setType((short) 1);
         hiMineInfo.setAcquisitionTime(stress.getAcquisitionTime());
-        hiMineInfo.setStressValue(stress.getpValue());
+        hiMineInfo.setStressValue(stress.getPValue());
         hiMineInfo.setQuakeValue((double) 0);
         hiMineInfo.setMemo(stress.getMemo());
         hiMineInfo.setMpId(stress.getMpId());

@@ -5,16 +5,15 @@
         <result column="ID" jdbcType="DECIMAL" property="id"/>
         <result column="NAME" jdbcType="VARCHAR" property="name"/>
         <result column="POS_LIST" jdbcType="VARCHAR" property="posList"/>
-        <result column="ISMONITOR" jdbcType="DECIMAL" property="ismonitor"/>
+        <result column="ISMONITOR" jdbcType="DECIMAL" property="monitor"/>
         <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
         <result column="TYPE" jdbcType="VARCHAR" property="type"/>
     </resultMap>
-    
+
     <!-- 向Area表中添加数据 -->
     <insert id="insertData" parameterType="com.akxy.entity.Area">
         INSERT INTO AREA (ID, NAME, POS_LIST, ISMONITOR, MEMO, TYPE)
-        VALUES (#{id,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR}, #{posList,jdbcType=VARCHAR},
-                #{ismonitor,jdbcType=DECIMAL}, #{memo,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR})
+        VALUES (#{id}, #{name}, #{posList}, #{monitor}, #{memo}, #{type})
     </insert>
 
     <!-- 获取Area列表 -->
