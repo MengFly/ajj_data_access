@@ -28,4 +28,11 @@ public interface AreaMapper {
      */
     List<Area> getArea();
 
+    int count();
+
+    int countByName(@Param("areaName") String areaName);
+
+    long maxId();
+
+    Long findIdByName(@Param("areaName") String areaName);
 }

@@ -23,4 +23,24 @@
         ORDER BY ID DESC
     </select>
 
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM AREA
+    </select>
+    <select id="countByName" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM AREA
+        WHERE NAME = #{areaName, jdbcType=VARCHAR}
+    </select>
+    <select id="maxId" resultType="java.lang.Long">
+        SELECT MAX(ID)
+        FROM AREA
+    </select>
+    <select id="findIdByName" resultType="java.lang.Long">
+        SELECT ID
+        FROM AREA
+        WHERE NAME = #{areaName, jdbcType=VARCHAR}
+          AND ROWNUM = 1
+    </select>
+
 </mapper>

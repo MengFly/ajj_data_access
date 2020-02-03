@@ -8,17 +8,6 @@ import java.util.Map;
 public interface ILocalCacheService {
 
     /**
-     * 获取到子矿区中的工作面缓存，并且结果根据Area.id进行排序
-     */
-    Map<String, Area> getMineAreaCache(String mineDb);
-
-    /**
-     * 重载子矿区工作面缓存
-     */
-    void resetMineAreaCache(String mineDb);
-
-
-    /**
      * 获取到子矿区中的所有测点缓存
      */
     List<StressMeasurePoint> getMinePointCache(String mineDb);

@@ -26,7 +26,7 @@
             #{item.stressValue,jdbcType=FLOAT},
             #{item.quakeValue,jdbcType=FLOAT},
             #{item.memo,jdbcType=VARCHAR},
-            #{item.mpId,jdbcType=DECIMAL})
+            #{item.mpId,jdbcType=DECIMAL}
             FROM dual
         </foreach>
     </insert>

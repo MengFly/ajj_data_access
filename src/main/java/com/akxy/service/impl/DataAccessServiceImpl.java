@@ -7,6 +7,7 @@ import com.akxy.mapper.*;
 import com.akxy.service.IDataAccessService;
 import com.akxy.service.ILocalCacheService;
 import com.akxy.util.AreaUtil;
+import com.akxy.util.ParseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +39,6 @@ public class DataAccessServiceImpl implements IDataAccessService {
     @Autowired
     private CurMineInfoMapper curMineInfoMapper;
     @Autowired
-    private StressCopyMapper stressCopyMapper;
-    @Autowired
-    private QuakeCopyMapper quakeCopyMapper;
-    @Autowired
     private PosResultMapper posResultMapper;
     @Autowired
     private StressTopDataInfoMapper stressTopDataInfoMapper;
@@ -49,6 +46,8 @@ public class DataAccessServiceImpl implements IDataAccessService {
     private HiMineInfoMapper hiMineInfoMapper;
     @Autowired
     private ConfigMapper configMapper;
+    @Autowired
+    private MinenewesttimeMapper minenewesttimeMapper;
 
     @Autowired
     private ILocalCacheService localCacheService;
@@ -57,31 +56,29 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
     @Override
     public void configArea(String primaryDb, String customDb, String mineName) {
-        // 目前子矿区中的工作面列表
-        Map<String, Area> existAreas = localCacheService.getMineAreaCache(customDb);
         List<String> areaNames = localCacheService.getMidAreaNameCache(customDb);
-        List<Long> areaIds = existAreas.values().stream().map(Area::getId).collect(Collectors.toList());
         DynamicDataSourceContextHolder.setDataSource(customDb);
         int addedAreaCount = 0;
-        if (areaIds.isEmpty()) {
-            addedAreaCount++;
+        // 如果没有存工作面信息，添加一个全矿信息
+        if (areaMapper.count() == 0) {
             Area area = Area.newInstance(AreaUtil.getAllMineId(customDb), "全矿", "0", "0");
             areaMapper.insertData(area);
-            areaIds.add(0, area.getId());
+            addedAreaCount++;
+        }
+        long maxId = -1;
+        if (!areaNames.isEmpty()) {
+            maxId = areaMapper.maxId();
         }
         for (String areaName : areaNames) {
-            // 如果此工作面不存在于矿区数据库中才进行存储，id为（最大id+1）
-            if (!existAreas.containsKey(areaName)) {
-                addedAreaCount++;
-                Area area = Area.newInstance(areaIds.get(0) + 1, areaName, "1", "1");
+            // 如果工作面不存在，那么就创建新的工作面
+            if (areaMapper.countByName(areaName) == 0) {
+                Area area = Area.newInstance(++maxId, areaName, "1", "1");
                 areaMapper.insertData(area);
-                areaIds.add(0, area.getId());
+                addedAreaCount++;
             }
         }
         if (addedAreaCount > 0) {
             log.info(">> [{}-{}] 新增工作面({})个", customDb, mineName, addedAreaCount);
-            // 由于新增了工作面，所以缓存中的工作面也要更新
-            localCacheService.resetMineAreaCache(customDb);
         } else {
             log.info(">> [{}-{}] 无新增工作面", customDb, mineName);
         }
@@ -167,15 +164,13 @@ public class DataAccessServiceImpl implements IDataAccessService {
             return;
         }
         log.info(">> [{}-{}] 开始处理微震数据({})条", customDb, mineName, quakes.size());
-        Map<String, Area> areas = localCacheService.getMineAreaCache(customDb);
-        try {
+        try (AreaUtil areaUtil = new AreaUtil(areaMapper)) {
             List<PosResult> needInsertPos = new ArrayList<>();
             DynamicDataSourceContextHolder.setDataSource(customDb);
             String quakeWarnConfig = configMapper.getConfigInfo("WZ", "WARNING").getStrValue();
             for (Quake quake : quakes) {
-
-                Area orDefault = areas.getOrDefault(quake.getAreaname(), null);
-                Long areaId = orDefault == null ? AreaUtil.getAllMineId(customDb) : orDefault.getId();
+                String areaName = quake.getAreaname();
+                Long areaId = areaUtil.getId(areaName, customDb);
                 PosResult posResult = dataService.assemblePosResult(areaId, quake, quakeWarnConfig);
                 needInsertPos.add(posResult);
             }
@@ -322,6 +317,36 @@ public class DataAccessServiceImpl implements IDataAccessService {
             if (quakeConnStatu != null) {
                 saveOrUpdateTopStatus(quakeConnStatu, customDb, mineName);
             }
+        }
+
+        // 此逻辑只有在济矿的服务里面才要起作用
+        updateMineNewestTime(primaryDb, customDb, mineName, stressTopNewDate, quakeTopNewDate);
+    }
+
+    private void updateMineNewestTime(String primaryDb, String customDb, String mineName, Date stressTopNewDate, Date quakeTopNewDate) {
+        DynamicDataSourceContextHolder.setDataSource(primaryDb);
+        String stressMineCode = customDb + "YL";
+        String quakeMineCode = customDb + "WZ";
+        insertOrUpdateNewestTime(mineName, stressTopNewDate, stressMineCode);
+        insertOrUpdateNewestTime(mineName, quakeTopNewDate, quakeMineCode);
+    }
+
+    private void insertOrUpdateNewestTime(String mineName, Date newestTime, String mineCode) {
+        if (newestTime != null) {
+            MinenewestTime minenewestTime = minenewesttimeMapper.selectByPrimaryKey(mineCode);
+            if (minenewestTime == null) {
+                minenewestTime = new MinenewestTime();
+                minenewestTime.setMineCode(mineCode);
+                minenewestTime.setNewestTime(newestTime);
+                minenewestTime.setMineName(mineName);
+                minenewesttimeMapper.insert(minenewestTime);
+            } else {
+                if (minenewestTime.getNewestTime().getTime() < newestTime.getTime()) {
+                    minenewestTime.setNewestTime(newestTime);
+                    minenewesttimeMapper.updateByPrimaryKey(minenewestTime);
+                }
+            }
+            log.info(">> [{}-{}] 当前最新时间{}", mineCode, mineName, ParseUtil.format(minenewestTime.getNewestTime()));
         }
     }
 

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,10 +20,6 @@ import java.util.stream.Collectors;
 @Service
 public class LocalCacheServiceImpl implements ILocalCacheService {
 
-    /**
-     * 子矿区数据库中的信息，不需要每次都从数据库中取出
-     */
-    private Map<String, Map<String, Area>> totalMineAreaCache = new ConcurrentHashMap<>();
     private Map<String, List<StressMeasurePoint>> totalPointCache = new ConcurrentHashMap<>();
     private Map<String, List<StressDataInfo>> totalStressDataCache = new ConcurrentHashMap<>();
 
@@ -32,9 +27,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     // 中间库缓存，每一次读取都需要重新读取，因此放在同一个列表里面，方便清理
     private Map<String, Object> midDataBaseCache = new ConcurrentHashMap<>();
 
-
-    @Autowired
-    private AreaMapper areaMapper;
     @Autowired
     private StressMeasurePointMapper measurePointMapper;
     @Autowired
@@ -46,30 +38,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     @Autowired
     StressDataInfoMapper stressDataInfoMapper;
 
-    @Override
-    public Map<String, Area> getMineAreaCache(String mineDb) {
-        if (!totalMineAreaCache.containsKey(mineDb)) {
-            resetMineAreaCache(mineDb);
-        }
-        Map<String, Area> areas = totalMineAreaCache.getOrDefault(mineDb, null);
-        if (areas == null) {
-            resetMineAreaCache(mineDb);
-            return totalMineAreaCache.getOrDefault(mineDb, Collections.emptyMap());
-        } else {
-            return areas;
-        }
-    }
-
-    @Override
-    public void resetMineAreaCache(String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource(mineDb);
-        Map<String, Area> areaMap = new LinkedHashMap<>();
-        for (Area area : areaMapper.getArea()) {
-            areaMap.put(area.getName(), area);
-        }
-        totalMineAreaCache.put(mineDb, areaMap);
-        DynamicDataSourceContextHolder.restoreDataSource();
-    }
 
     @Override
     public List<StressMeasurePoint> getMinePointCache(String mineDb) {

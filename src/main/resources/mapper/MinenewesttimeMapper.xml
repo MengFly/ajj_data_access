@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.akxy.mapper.MinenewesttimeMapper">
+    <resultMap id="BaseResultMap" type="com.akxy.entity.MinenewestTime">
+        <id column="MINE_CODE" jdbcType="VARCHAR" property="mineCode"/>
+        <result column="MINE_NAME" jdbcType="VARCHAR" property="mineName"/>
+        <result column="NEWEST_TIME" jdbcType="TIMESTAMP" property="newestTime"/>
+    </resultMap>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select MINE_CODE,
+               MINE_NAME,
+               NEWEST_TIME
+        from MINENEWESTTIME
+        where MINE_CODE = #{mineCode,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap" resultType="list">
+        select MINE_CODE,
+               MINE_NAME,
+               NEWEST_TIME
+        from MINENEWESTTIME
+    </select>
+
+    <insert id="insert" parameterType="com.akxy.entity.MinenewestTime">
+        insert into MINENEWESTTIME (MINE_CODE, MINE_NAME, NEWEST_TIME)
+        values (#{mineCode, jdbcType=VARCHAR}, #{mineName,jdbcType=VARCHAR}, #{newestTime,jdbcType=TIMESTAMP})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.akxy.entity.MinenewestTime">
+        update MINENEWESTTIME
+        set MINE_NAME   = #{mineName,jdbcType=VARCHAR},
+            NEWEST_TIME = #{newestTime,jdbcType=TIMESTAMP}
+        where MINE_CODE = #{mineCode,jdbcType=VARCHAR}
+    </update>
+</mapper>

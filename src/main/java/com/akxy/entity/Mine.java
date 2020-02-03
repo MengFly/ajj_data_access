@@ -1,5 +1,8 @@
 package com.akxy.entity;
 
+/**
+ * @author wangp
+ */
 public class Mine extends MineKey {
 	
 	/**

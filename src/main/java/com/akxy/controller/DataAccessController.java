@@ -38,21 +38,23 @@ public class DataAccessController {
         TaskUtil.getInstance().splitItemTaskExec(childMines, (customDb, integer) -> {
             localCacheService.prepareMidCache(primaryDb, customDb);
             String mineName = localCacheService.getMineName(customDb);
-            List<Stress> midStressCache = localCacheService.getMidStressCache(customDb);
-            List<Quake> midQuakeCache = localCacheService.getMidQuakeCache(customDb);
-            if (midStressCache.isEmpty() && midQuakeCache.isEmpty()) {
-                log.info(">> [{}-{}] 无数据", customDb, mineName);
-            } else {
-                log.info(">> [{}-{}] 查询到 -> 应力({})条，微震({})条", customDb, mineName,
-                        midStressCache.size(), midQuakeCache.size());
-                iDataAccessService.configArea(primaryDb, customDb, mineName);
-                iDataAccessService.writeNotExistsMeasurePoint(customDb, mineName);
-                iDataAccessService.readAndCalculateStress(primaryDb, customDb, mineName);
-                iDataAccessService.readAndCalculateQuake(primaryDb, customDb, mineName);
-                iDataAccessService.updatePointTime(primaryDb, customDb, mineName);
+            try {
+                List<Stress> midStressCache = localCacheService.getMidStressCache(customDb);
+                List<Quake> midQuakeCache = localCacheService.getMidQuakeCache(customDb);
+                if (midStressCache.isEmpty() && midQuakeCache.isEmpty()) {
+                    log.info(">> [{}-{}] 无数据", customDb, mineName);
+                } else {
+                    log.info(">> [{}-{}] 查询到 -> 应力({})条，微震({})条", customDb, mineName,
+                            midStressCache.size(), midQuakeCache.size());
+                    iDataAccessService.configArea(primaryDb, customDb, mineName);
+                    iDataAccessService.writeNotExistsMeasurePoint(customDb, mineName);
+                    iDataAccessService.readAndCalculateStress(primaryDb, customDb, mineName);
+                    iDataAccessService.readAndCalculateQuake(primaryDb, customDb, mineName);
+                    iDataAccessService.updatePointTime(primaryDb, customDb, mineName);
+                }
+            } finally {
+                iDataAccessService.writeToPlatform(primaryDb, customDb, mineName);
             }
-            iDataAccessService.writeToPlatform(primaryDb, customDb, mineName);
-
         });
         // 中间库的缓存信息在所有矿区都分析结束的时候就没有用了，删除掉即可
         localCacheService.restoreAllMidCache();

@@ -6,6 +6,9 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.Date;
+/**
+ * @author wangp
+ */
 @Getter
 @Setter
 @ToString

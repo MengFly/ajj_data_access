@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 
+/**
+ * @author wangp
+ */
 @Getter
 @Setter
 @ToString
@@ -32,6 +34,5 @@ public class Area {
         area.setMemo(memo);
         return area;
     }
-
 
 }

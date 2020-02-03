@@ -1,8 +1,15 @@
 package com.akxy.util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.function.Function;
 
 public class ParseUtil {
+
+    private static final DateFormat DATE_FORMAT =
+            SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.CHINA);
 
     /**
      * 获取整数类型数据
@@ -23,4 +30,14 @@ public class ParseUtil {
     public static <T> T getOrDefault(T t, T defaultValue) {
         return t == null ? defaultValue : defaultValue;
     }
+
+    public static String format(Date date) {
+        if (date == null) {
+            return null;
+        }
+        synchronized (DATE_FORMAT) {
+            return DATE_FORMAT.format(date);
+        }
+    }
+
 }

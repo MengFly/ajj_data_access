@@ -2,10 +2,7 @@ package com.akxy.common;
 
 import com.akxy.configuration.DynamicDataSourceContextHolder;
 import com.akxy.entity.*;
-import com.akxy.mapper.AreaTopDataInfoMapper;
-import com.akxy.mapper.OrganMineMapper;
-import com.akxy.mapper.StressMeasurePointMapper;
-import com.akxy.mapper.StressTopDataInfoMapper;
+import com.akxy.mapper.*;
 import com.akxy.service.impl.LocalCacheServiceImpl;
 import com.akxy.util.AreaUtil;
 import com.akxy.util.ParseUtil;
@@ -37,6 +34,8 @@ public class DataUtil {
     private AreaTopDataInfoMapper areaTopDataInfoMapper;
     @Autowired
     private LocalCacheServiceImpl localCacheService;
+    @Autowired
+    private AreaMapper areaMapper;
 
 
     /**
@@ -46,30 +45,30 @@ public class DataUtil {
                                                 List<Stress> stresses, String customDb) {
         // 所有没有被记录在子矿区数据库中的测点信息
         List<StressMeasurePoint> returnPoints = new ArrayList<>();
-        Map<String, Area> areas = localCacheService.getMineAreaCache(customDb);
         // 测点标识，用于检查测点是否已经处理过了
         Set<String> signList = new HashSet<>();
-        for (Stress stress : stresses) {
-            String sign = getPointSign(stress);
-            // 已经处理过的测点不处理
-            if (signList.contains(sign)) {
-                continue;
-            }
-            // 已经存在过的测点不处理
-            boolean mpIsExists = exitsStressMp.stream().parallel().anyMatch(
-                    point -> Objects.equals(sign, getPointSign(point)));
-            if (mpIsExists) {
+        try (AreaUtil areaUtil = new AreaUtil(areaMapper)) {
+            for (Stress stress : stresses) {
+                String sign = getPointSign(stress);
+                // 已经处理过的测点不处理
+                if (signList.contains(sign)) {
+                    continue;
+                }
+                // 已经存在过的测点不处理
+                boolean mpIsExists = exitsStressMp.stream().parallel().anyMatch(
+                        point -> Objects.equals(sign, getPointSign(point)));
+                if (mpIsExists) {
+                    signList.add(sign);
+                    continue;
+                }
+                // 剩下的肯定就是既没有处理过的，也没有存在于子矿区数据库中的测点信息
                 signList.add(sign);
-                continue;
+                Long mpAreaId = areaUtil.getId(stress.getAreaname(), customDb);
+                StressMeasurePoint stressMeasurePoint = getStressMeasurePoint(stress, mpAreaId);
+                returnPoints.add(stressMeasurePoint);
             }
-
-            // 剩下的肯定就是既没有处理过的，也没有存在于子矿区数据库中的测点信息
-            signList.add(sign);
-            Area area = areas.get(stress.getAreaname());
-            Long mpAreaId = area == null ? AreaUtil.getAllMineId(customDb) : area.getId();
-            StressMeasurePoint stressMeasurePoint = getStressMeasurePoint(stress, mpAreaId);
-            returnPoints.add(stressMeasurePoint);
         }
+
         return returnPoints;
     }
 
@@ -113,14 +112,11 @@ public class DataUtil {
      * @param stress 经过处理的中间库Stress信息
      * @return List<StressDataInfo> 组装完成的StressDataInfo信息
      */
-    public StressDataInfo getStressDataInfo(String customDb, Map<String, Area> areas, Stress stress) {
+    public StressDataInfo getStressDataInfo(String customDb, Long areaId, Stress stress) {
         StressDataInfo stressDataInfo = new StressDataInfo();
         try {
             stressDataInfo.setAcquisitionTime(stress.getCollectiontime());
             // 结果集
-            Area area = areas.get(stress.getAreaname());
-            Long areaId = area == null ?
-                    areas.values().stream().findFirst().map(Area::getId).orElse(AreaUtil.getAllMineId(customDb)) : area.getId();
             stressDataInfo.setAreaId(areaId);
             stressDataInfo.setWarnStatus(stress.getWarnrecord() == null ? (short) 0
                     : ("正常".equals(stress.getWarnrecord()) ? (short) 0
@@ -181,26 +177,29 @@ public class DataUtil {
 
     public List<StressDataInfo> optionAllStress(String customDb, List<Stress> listStress) {
         List<StressDataInfo> listStressDataInfos = new ArrayList<>();
-        Map<String, Area> areas = localCacheService.getMineAreaCache(customDb);
         List<StressMeasurePoint> stressMeasurePoints = localCacheService.getMinePointCache(customDb);
         DynamicDataSourceContextHolder.setDataSource(customDb);
-        listStress.stream().filter(Objects::nonNull).forEach(stress -> {
-            StressDataInfo stressDataInfo = getStressDataInfo(customDb, areas, stress);
-            if (stressDataInfo != null) {
-                StressMeasurePoint stressMeasurePoint = stressMeasurePoints.stream()
-                        .filter(point -> Objects.equals(getPointSign(point), getPointSign(stress)))
-                        .findFirst().orElse(null);
-                Long stressMpId;
-                if (stressMeasurePoint == null) {
-                    stressMpId = stressMeasurePointMapper.getMPID(stress.getTunnelname(),
-                            stress.getDepth(), stress.getDistance());
-                } else {
-                    stressMpId = stressMeasurePoint.getId();
+        try (AreaUtil areaUtil = new AreaUtil(areaMapper)) {
+            listStress.stream().filter(Objects::nonNull).forEach(stress -> {
+                Long areaId = areaUtil.getId(stress.getAreaname(), customDb);
+                StressDataInfo stressDataInfo = getStressDataInfo(customDb, areaId, stress);
+                if (stressDataInfo != null) {
+                    StressMeasurePoint stressMeasurePoint = stressMeasurePoints.stream()
+                            .filter(point -> Objects.equals(getPointSign(point), getPointSign(stress)))
+                            .findFirst().orElse(null);
+                    Long stressMpId;
+                    if (stressMeasurePoint == null) {
+                        stressMpId = stressMeasurePointMapper.getMPID(stress.getTunnelname(),
+                                stress.getDepth(), stress.getDistance());
+                    } else {
+                        stressMpId = stressMeasurePoint.getId();
+                    }
+                    stressDataInfo.setMpId(ParseUtil.getOrDefault(stressMpId, 0L));
+                    listStressDataInfos.add(stressDataInfo);
                 }
-                stressDataInfo.setMpId(ParseUtil.getOrDefault(stressMpId, 0L));
-                listStressDataInfos.add(stressDataInfo);
-            }
-        });
+            });
+        }
+
         return listStressDataInfos;
     }
 
