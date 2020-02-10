@@ -48,10 +48,11 @@
     </insert>
 
     <!-- 获取该数据对应的MP_ID -->
-    <select id="getMPID" resultType="java.lang.Long">
+    <select id="findIdBy" resultType="java.lang.Long">
         select id
         from STRESS_MEASUREPOINT
-        where TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
+        where AREA_ID = #{areaId, jdbcType=DECIMAL}
+          AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
           and depth = #{depth,jdbcType=FLOAT}
           and distance = #{distance,jdbcType=FLOAT}
           AND ROWNUM = 1
@@ -63,28 +64,32 @@
         <include refid="Base_Column_List"/>
         FROM STRESS_MEASUREPOINT
     </select>
-
-    <!-- 批量更新STRESS_MEASUREPOINT -->
-    <update id="updateGroupData" parameterType="java.util.List">
-        <foreach collection="list" item="item" index="index" open="begin"
-                 close=";end;" separator=";">
+    <select id="countBy" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM STRESS_MEASUREPOINT
+        WHERE AREA_ID = #{areaId, jdbcType=DECIMAL}
+          AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
+          AND DISTANCE = #{distance,jdbcType=FLOAT}
+          AND DEPTH = #{depth, jdbcType=FLOAT}
+    </select>
+    <select id="findMaxId" resultType="java.lang.Long">
+        SELECT MAX(ID)
+        FROM STRESS_MEASUREPOINT
+    </select>
+    <update id="updateToTime" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
             update STRESS_MEASUREPOINT p
             set
-            p.AREA_ID=#{item.areaId,jdbcType=DECIMAL},
-            p.NAME=#{item.name,jdbcType=VARCHAR},
-            p.TUNNEL_NAME=#{item.tunnelName,jdbcType=VARCHAR},
-            p.X=#{item.x,jdbcType=FLOAT},
-            p.Y=#{item.y,jdbcType=FLOAT},
-            p.Z=#{item.z,jdbcType=FLOAT},
-            p.DEPTH=#{item.depth,jdbcType=FLOAT},
-            p.DISTANCE=#{item.distance,jdbcType=FLOAT},
-            p.INITIAL_VALUE=#{item.initialValue,jdbcType=FLOAT},
-            p.YELLOW_WARNVALUE=#{item.yellowWarnvalue,jdbcType=FLOAT},
-            p.RED_WARNVALUE=#{item.redWarnvalue,jdbcType=FLOAT},
-            p.MEMO=#{item.memo,jdbcType=VARCHAR},
-            p.FROM_TIME=#{item.fromTime,jdbcType=TIMESTAMP},
             p.TO_TIME=#{item.toTime,jdbcType=TIMESTAMP}
-            where p."ID"=#{item.id,jdbcType=DECIMAL}
+            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.TO_TIME &lt; #{item.toTime,jdbcType=TIMESTAMP}
+        </foreach>
+    </update>
+    <update id="updateFromTime" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
+            update STRESS_MEASUREPOINT p
+            set
+            p.FROM_TIME=#{item.fromTime,jdbcType=TIMESTAMP}
+            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.FROM_TIME &gt; #{item.fromTime,jdbcType=TIMESTAMP}
         </foreach>
     </update>
 

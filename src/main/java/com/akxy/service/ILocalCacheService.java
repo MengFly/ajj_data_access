@@ -3,36 +3,14 @@ package com.akxy.service;
 import com.akxy.entity.*;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ILocalCacheService {
-
-    /**
-     * 获取到子矿区中的所有测点缓存
-     */
-    List<StressMeasurePoint> getMinePointCache(String mineDb);
-
-    /**
-     * 重载子矿区测点缓存
-     */
-    void resetMinePointCache(String mineDb);
-
-
-    /**
-     * 获取子矿区最新的1000条应力信息，这个用来和中间库的应力信息进行比对
-     */
-    List<StressDataInfo> getStressDataCache(String mineDb);
-
-    /**
-     * 重载子矿区的最新应力缓存信息
-     */
-    void resetStressDataCache(String mineDb);
 
     /**
      * 准备读取中间库缓存信息
      * 这里的缓存每一次处理都要重新读取一次
      */
-    void prepareMidCache(String primaryDB, String mineDb);
+    void prepareMidCache(String primaryDb, String mineDb);
 
     /**
      * 清理中间库缓存信息

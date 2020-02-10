@@ -28,7 +28,7 @@ public class ParseUtil {
     }
 
     public static <T> T getOrDefault(T t, T defaultValue) {
-        return t == null ? defaultValue : defaultValue;
+        return t == null ? defaultValue : t;
     }
 
     public static String format(Date date) {

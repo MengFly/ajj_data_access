@@ -26,7 +26,7 @@
         <result column="TRIGCH" jdbcType="VARCHAR" property="trigch"/>
         <result column="EXCSTATUS" jdbcType="VARCHAR" property="excstatus"/>
     </resultMap>
-
+    
     <!-- 批量插入POSRESULT -->
     <insert id="insertGroupData" parameterType="java.util.List">
         INSERT INTO POSRESULT (COLLECT_TIME, X, Y,
@@ -36,7 +36,7 @@
         SENSITIVITY, SENSORTYPE, POSDESC,
         MAXSWING, AVGSWING, BASICFREQ,
         TRIGCH, EXCSTATUS)
-        <foreach collection="list" item="item" index="index" separator="UNION">
+        <foreach collection="list" item="item" index="index" separator="UNION" open="(" close=")">
             SELECT
             #{item.collectTime,jdbcType=TIMESTAMP},
             #{item.x,jdbcType=FLOAT},
@@ -68,6 +68,12 @@
         SELECT COLLECT_TIME
         FROM (SELECT COLLECT_TIME FROM posresult ORDER BY COLLECT_TIME DESC)
         WHERE ROWNUM = 1
+    </select>
+    <select id="count" resultType="java.lang.Integer" parameterType="com.akxy.entity.PosResult">
+        SELECT COUNT(*)
+        FROM POSRESULT
+        WHERE AREA_ID = #{item.areaId, jdbcType=DECIMAL}
+          AND COLLECT_TIME = #{item.collectTime,jdbcType=TIMESTAMP}
     </select>
 
 </mapper>

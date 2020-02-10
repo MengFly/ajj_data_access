@@ -1,5 +1,6 @@
 package com.akxy.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -13,12 +14,15 @@ public interface StressMeasurePointMapper {
     /**
      * 获取该数据对应的MP_ID
      *
+     * @param areaId     工作面Id
      * @param tunnelName 巷道名称
      * @param distance   距离
      * @param depth      深度
      */
-    Long getMPID(@Param("tunnelName") String tunnelName, @Param("depth") Double depth,
-                 @Param("distance") Double distance);
+    Long findIdBy(@Param("areaId") Long areaId,
+                  @Param("tunnelName") String tunnelName,
+                  @Param("depth") Double depth,
+                  @Param("distance") Double distance);
 
     /**
      * 插入测点
@@ -33,9 +37,14 @@ public interface StressMeasurePointMapper {
      */
     List<StressMeasurePoint> getAllPoint();
 
-    /**
-     * 批量更新STRESS_MEASUREPOINT
-     */
-    void updateGroupData(List<StressMeasurePoint> list);
+    int countBy(@Param("areaId") Long areaId,
+                @Param("tunnelName") String tunnelName,
+                @Param("distance") Double distance,
+                @Param("depth") Double depth);
 
+    Long findMaxId();
+
+    void updateToTime(ArrayList<StressMeasurePoint> stressMeasurePoints);
+
+    void updateFromTime(ArrayList<StressMeasurePoint> stressMeasurePoints);
 }

@@ -50,7 +50,6 @@ public class DataAccessController {
                     iDataAccessService.writeNotExistsMeasurePoint(customDb, mineName);
                     iDataAccessService.readAndCalculateStress(primaryDb, customDb, mineName);
                     iDataAccessService.readAndCalculateQuake(primaryDb, customDb, mineName);
-                    iDataAccessService.updatePointTime(primaryDb, customDb, mineName);
                 }
             } finally {
                 iDataAccessService.writeToPlatform(primaryDb, customDb, mineName);

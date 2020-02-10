@@ -27,15 +27,9 @@ public interface IDataAccessService {
     void configArea(String primaryDb, String customDb, String mineName);
 
     /**
-     * 更新STRESS_MEASUREPOINT FROM_TIME & TO_TIME
-     */
-    void updatePointTime(String primaryDb, String customDb, String mineName);
-
-    /**
      * 写入PLATFORM连接状态表
      */
     void writeToPlatform(String primaryDb, String customDb, String mineName);
 
     boolean hasNeedAnalysisData();
-
 }

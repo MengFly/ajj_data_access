@@ -27,7 +27,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AutomateRun implements ApplicationRunner {
     private long globalStep = 0;
-    static final long TIME_INTERVAL = 30000;
+
+    private long lastStepTime = System.currentTimeMillis();
+
+    /**
+     * 检测阻塞的间隔时间，超过十五分钟时间没有更新说明程序被阻塞住了
+     */
+    private static final long BLOCK_TIME = 15 * 1000 * 60L;
+
+
+    static final long TIME_INTERVAL_SECOND = 30;
 
     @Value("${custom.datasource.names}")
     public String customDbs;
@@ -47,19 +56,18 @@ public class AutomateRun implements ApplicationRunner {
         ).collect(Collectors.toList());
         new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "main"))
                 .scheduleWithFixedDelay(() -> {
-                    long startTime = System.currentTimeMillis();
-
+                    lastStepTime = System.currentTimeMillis();
                     boolean isHandleData = dataAccessController.readAndCalculate(childMines, globalStep++);
                     if (!isHandleData) {
-                        log.info("矿区没有数据需要分析 SLEEP {} MMS", TIME_INTERVAL);
+                        log.info("矿区没有数据需要分析 SLEEP {} S", TIME_INTERVAL_SECOND);
                         try {
-                            TimeUnit.MILLISECONDS.sleep(TIME_INTERVAL);
+                            TimeUnit.SECONDS.sleep(TIME_INTERVAL_SECOND);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                    log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - startTime));
-                }, 0, 30, TimeUnit.SECONDS);
+                    log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - lastStepTime));
+                }, 0, TIME_INTERVAL_SECOND, TimeUnit.SECONDS);
     }
 
     /**
@@ -91,5 +99,19 @@ public class AutomateRun implements ApplicationRunner {
 
         }
         log.info(">>>> [Scheduled] 定时任务执行结束");
+    }
+
+    /**
+     * 检测程序是否卡死
+     */
+    @Scheduled(cron = "0 */1 * * * ?")
+    public void checkIsBlock() {
+        if (System.currentTimeMillis() - lastStepTime > BLOCK_TIME) {
+            log.info("[CheckBlock] 程序卡死");
+            System.exit(-1);
+        } else {
+            log.info("[CheckBlock] 程序正正常运行");
+        }
+
     }
 }

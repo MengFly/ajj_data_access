@@ -20,15 +20,9 @@ import java.util.stream.Collectors;
 @Service
 public class LocalCacheServiceImpl implements ILocalCacheService {
 
-    private Map<String, List<StressMeasurePoint>> totalPointCache = new ConcurrentHashMap<>();
-    private Map<String, List<StressDataInfo>> totalStressDataCache = new ConcurrentHashMap<>();
-
-
     // 中间库缓存，每一次读取都需要重新读取，因此放在同一个列表里面，方便清理
     private Map<String, Object> midDataBaseCache = new ConcurrentHashMap<>();
 
-    @Autowired
-    private StressMeasurePointMapper measurePointMapper;
     @Autowired
     private StressMapper stressMapper;
     @Autowired
@@ -37,50 +31,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     private MineMapper mineMapper;
     @Autowired
     StressDataInfoMapper stressDataInfoMapper;
-
-
-    @Override
-    public List<StressMeasurePoint> getMinePointCache(String mineDb) {
-        if (!totalPointCache.containsKey(mineDb)) {
-            resetMinePointCache(mineDb);
-        }
-        List<StressMeasurePoint> points = totalPointCache.getOrDefault(mineDb, null);
-        if (points == null) {
-            resetMinePointCache(mineDb);
-            return totalPointCache.getOrDefault(mineDb, Collections.emptyList());
-        } else {
-            return points;
-        }
-    }
-
-    @Override
-    public void resetMinePointCache(String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource(mineDb);
-        totalPointCache.put(mineDb, measurePointMapper.getAllPoint());
-        DynamicDataSourceContextHolder.restoreDataSource();
-    }
-
-    @Override
-    public List<StressDataInfo> getStressDataCache(String mineDb) {
-        if (!totalStressDataCache.containsKey(mineDb)) {
-            resetMinePointCache(mineDb);
-        }
-        List<StressDataInfo> stressDataInfos = totalStressDataCache.getOrDefault(mineDb, null);
-        if (stressDataInfos == null) {
-            resetStressDataCache(mineDb);
-            return totalStressDataCache.getOrDefault(mineDb, Collections.emptyList());
-        } else {
-            return stressDataInfos;
-        }
-
-    }
-
-    @Override
-    public void resetStressDataCache(String mineDb) {
-        DynamicDataSourceContextHolder.setDataSource(mineDb);
-        totalStressDataCache.put(mineDb, stressDataInfoMapper.getDataInfoCache());
-        DynamicDataSourceContextHolder.restoreDataSource();
-    }
 
     @Override
     public void prepareMidCache(String primaryDb, String mineDb) {

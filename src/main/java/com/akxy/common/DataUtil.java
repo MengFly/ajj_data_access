@@ -3,9 +3,9 @@ package com.akxy.common;
 import com.akxy.configuration.DynamicDataSourceContextHolder;
 import com.akxy.entity.*;
 import com.akxy.mapper.*;
-import com.akxy.service.impl.LocalCacheServiceImpl;
 import com.akxy.util.AreaUtil;
 import com.akxy.util.ParseUtil;
+import com.akxy.util.StressMpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,8 @@ import java.util.*;
 @Component
 public class DataUtil {
 
+    private static final String DEFAULT_TUNNEL_NAME = "巷道";
+
     @Autowired
     private StressMeasurePointMapper stressMeasurePointMapper;
     @Autowired
@@ -33,60 +35,57 @@ public class DataUtil {
     @Autowired
     private AreaTopDataInfoMapper areaTopDataInfoMapper;
     @Autowired
-    private LocalCacheServiceImpl localCacheService;
-    @Autowired
     private AreaMapper areaMapper;
 
 
     /**
      * 组装没有录入在子矿区数据库中的测点信息
      */
-    public List<StressMeasurePoint> optionPoint(List<StressMeasurePoint> exitsStressMp,
-                                                List<Stress> stresses, String customDb) {
+    public List<StressMeasurePoint> optionPoint(List<Stress> stresses, String customDb) {
         // 所有没有被记录在子矿区数据库中的测点信息
         List<StressMeasurePoint> returnPoints = new ArrayList<>();
         // 测点标识，用于检查测点是否已经处理过了
-        Set<String> signList = new HashSet<>();
-        try (AreaUtil areaUtil = new AreaUtil(areaMapper)) {
+        Set<String> pointSignSet = new HashSet<>();
+        try (AreaUtil areaUtil = new AreaUtil()) {
             for (Stress stress : stresses) {
-                String sign = getPointSign(stress);
+                // 防止巷道名称为空
+                stress.setTunnelname(ParseUtil.getOrDefault(stress.getTunnelname(), DEFAULT_TUNNEL_NAME));
+                String pointSign = getPointSign(stress);
                 // 已经处理过的测点不处理
-                if (signList.contains(sign)) {
+                if (pointSignSet.contains(pointSign)) {
                     continue;
                 }
                 // 已经存在过的测点不处理
-                boolean mpIsExists = exitsStressMp.stream().parallel().anyMatch(
-                        point -> Objects.equals(sign, getPointSign(point)));
-                if (mpIsExists) {
-                    signList.add(sign);
-                    continue;
+                Long mpAreaId = areaUtil.getId(stress.getAreaname(), customDb, areaMapper);
+                boolean mpIsExists = stressMeasurePointMapper
+                        .countBy(mpAreaId, stress.getTunnelname(), stress.getDistance(), stress.getDepth()) > 0;
+                if (!mpIsExists) {
+                    pointSignSet.add(pointSign);
+                    StressMeasurePoint stressMeasurePoint = getStressMeasurePoint(stress, mpAreaId);
+                    returnPoints.add(stressMeasurePoint);
                 }
-                // 剩下的肯定就是既没有处理过的，也没有存在于子矿区数据库中的测点信息
-                signList.add(sign);
-                Long mpAreaId = areaUtil.getId(stress.getAreaname(), customDb);
-                StressMeasurePoint stressMeasurePoint = getStressMeasurePoint(stress, mpAreaId);
-                returnPoints.add(stressMeasurePoint);
+                pointSignSet.add(pointSign);
             }
         }
 
         return returnPoints;
     }
 
-    public String getPointSign(StressMeasurePoint point) {
-        return ParseUtil.getOrDefault(point.getTunnelName(), "巷道")
-                + point.getDistance() + point.getDepth();
-    }
-
+    /**
+     * 获得测点的标识符，工作面名称 + 巷道名称 + Distance + Depth
+     *
+     * @param stress 应力信息
+     * @return 测点标识符
+     */
     public String getPointSign(Stress stress) {
-        return ParseUtil.getOrDefault(stress.getTunnelname(), "巷道")
-                + stress.getDistance() + stress.getDepth();
+        return stress.getAreaname() + stress.getTunnelname() + stress.getDistance() + stress.getDepth();
     }
 
     public static StressMeasurePoint getStressMeasurePoint(Stress stress, Long mpAreaId) {
         StressMeasurePoint stressMeasurePoint = new StressMeasurePoint();
         stressMeasurePoint.setAreaId(mpAreaId);
         stressMeasurePoint.setName(stress.getName());
-        stressMeasurePoint.setTunnelName(ParseUtil.getOrDefault(stress.getTunnelname(), "巷道"));
+        stressMeasurePoint.setTunnelName(stress.getTunnelname());
         stressMeasurePoint.setX(stress.getX());
         stressMeasurePoint.setY(stress.getY());
         stressMeasurePoint.setZ(stress.getZ());
@@ -118,9 +117,7 @@ public class DataUtil {
             stressDataInfo.setAcquisitionTime(stress.getCollectiontime());
             // 结果集
             stressDataInfo.setAreaId(areaId);
-            stressDataInfo.setWarnStatus(stress.getWarnrecord() == null ? (short) 0
-                    : ("正常".equals(stress.getWarnrecord()) ? (short) 0
-                    : ("黄色".equals(stress.getWarnrecord()) ? (short) 1 : (short) 2)));
+            stressDataInfo.setWarnStatus(getWarnStatus(stress.getWarnrecord()));
             stressDataInfo.setDepth(BigDecimal.valueOf(stress.getDepth()));
             stressDataInfo.setDistance(BigDecimal.valueOf(stress.getDistance()));
             stressDataInfo.setMemo("0");
@@ -131,7 +128,6 @@ public class DataUtil {
             stressDataInfo.setZ(stress.getZ());
             stressDataInfo.setYellowValue(BigDecimal.valueOf(stress.getYellowwarn()));
             stressDataInfo.setRedValue(BigDecimal.valueOf(stress.getRedwarn()));
-            stressDataInfo.setWarnStatus(getWarnStatus(stress.getValue()));
             if (stress.getInitialvalue() == 0) {
                 stressDataInfo.setZfIndex(0.);
             } else {
@@ -144,17 +140,31 @@ public class DataUtil {
         return stressDataInfo;
     }
 
+
+    private short getWarnStatus(String warnRecord) {
+        if (warnRecord == null) {
+            return 0;
+        }
+        if ("黄色".equals(warnRecord)) {
+            return 1;
+        }
+        if ("红色".equals(warnRecord)) {
+            return 2;
+        }
+        return 0;
+    }
+
     /**
      * 组装POSResult数据
      */
-    public PosResult assemblePosResult(Long areaId, Quake quake, String quakeWarnConfig) {
+    public synchronized PosResult assemblePosResult(Long areaId, Quake quake, String quakeWarnConfig) {
         PosResult posResult = new PosResult();
 
         posResult.setCollectTime(quake.getCollectiontime());
-        posResult.setX(quake.getX());
-        posResult.setY(quake.getY());
-        posResult.setZ(quake.getZ());
-        posResult.setEnergy(quake.getEnergy());
+        posResult.setX(ParseUtil.getFValue(quake.getX(), Double::parseDouble));
+        posResult.setY(ParseUtil.getFValue(quake.getY(), Double::parseDouble));
+        posResult.setZ(ParseUtil.getFValue(quake.getZ(), Double::parseDouble));
+        posResult.setEnergy(ParseUtil.getFValue(quake.getEnergy(), Double::parseDouble));
         posResult.setAreaId(areaId);
         posResult.setSource(getQuakeWarn(quake.getMinecode(), quake.getEnergy(), quakeWarnConfig));
         posResult.setMemo("0");
@@ -177,23 +187,15 @@ public class DataUtil {
 
     public List<StressDataInfo> optionAllStress(String customDb, List<Stress> listStress) {
         List<StressDataInfo> listStressDataInfos = new ArrayList<>();
-        List<StressMeasurePoint> stressMeasurePoints = localCacheService.getMinePointCache(customDb);
         DynamicDataSourceContextHolder.setDataSource(customDb);
-        try (AreaUtil areaUtil = new AreaUtil(areaMapper)) {
+        try (AreaUtil areaUtil = new AreaUtil();
+             StressMpUtil mpUtil = new StressMpUtil()) {
             listStress.stream().filter(Objects::nonNull).forEach(stress -> {
-                Long areaId = areaUtil.getId(stress.getAreaname(), customDb);
+                Long areaId = areaUtil.getId(stress.getAreaname(), customDb, areaMapper);
                 StressDataInfo stressDataInfo = getStressDataInfo(customDb, areaId, stress);
                 if (stressDataInfo != null) {
-                    StressMeasurePoint stressMeasurePoint = stressMeasurePoints.stream()
-                            .filter(point -> Objects.equals(getPointSign(point), getPointSign(stress)))
-                            .findFirst().orElse(null);
-                    Long stressMpId;
-                    if (stressMeasurePoint == null) {
-                        stressMpId = stressMeasurePointMapper.getMPID(stress.getTunnelname(),
-                                stress.getDepth(), stress.getDistance());
-                    } else {
-                        stressMpId = stressMeasurePoint.getId();
-                    }
+                    Long stressMpId = mpUtil.getId(areaId, stress.getTunnelname(), stress.getDistance(),
+                            stress.getDepth(), customDb, stressMeasurePointMapper);
                     stressDataInfo.setMpId(ParseUtil.getOrDefault(stressMpId, 0L));
                     listStressDataInfos.add(stressDataInfo);
                 }
@@ -268,21 +270,6 @@ public class DataUtil {
         hiMineInfo.setMemo(stress.getMemo());
         hiMineInfo.setMpId(stress.getMpId());
         return hiMineInfo;
-    }
-
-    /**
-     * 获取Stress预警状态
-     */
-    public Short getWarnStatus(Double pValue) {
-        short warnStatus;
-        if (pValue < 9) {
-            warnStatus = 0;
-        } else if (pValue > 9 && pValue < 11) {
-            warnStatus = 1;
-        } else {
-            warnStatus = 2;
-        }
-        return warnStatus;
     }
 
     /**
