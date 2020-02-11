@@ -28,10 +28,12 @@ public class DataAccessController {
     @Autowired
     private ILocalCacheService localCacheService;
 
+
     /**
      * 从中间库读取，计算Stress数据
      */
     public boolean readAndCalculate(List<String> childMines, long globalStep) {
+
         // 如果没有数据要进行分析
         boolean hasDataNeedAnalysis = iDataAccessService.hasNeedAnalysisData();
         log.info(">>>>>>>>>>>>>> [Step {}] DataAccess Service Start<<<<<<<<<<<<<<<", globalStep);

@@ -90,6 +90,12 @@
         FROM STRESS
         WHERE COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
     </delete>
+    <delete id="deleteByMineCodeAndTimeLessThan">
+        DELETE
+        FROM STRESS
+        WHERE MINECODE = #{mineCode, jdbcType=VARCHAR}
+          AND COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
+    </delete>
 
     <select id="stressCount" resultType="java.lang.Integer">
         SELECT COUNT(1)

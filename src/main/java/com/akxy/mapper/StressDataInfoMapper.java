@@ -40,4 +40,8 @@ public interface StressDataInfoMapper {
      * @return 最大时间
      */
     Timestamp findMaxAcquisitionTimeBy(@Param("areaId") Long areaId, @Param("mpId") Long mpId);
+
+    int updateAreaIdByMpId(@Param("mpId") Long mpId,@Param("areaId") Long areaId);
+
+    int countBy(@Param("mpId") Long mpId);
 }

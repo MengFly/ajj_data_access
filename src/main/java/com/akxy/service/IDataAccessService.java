@@ -1,5 +1,7 @@
 package com.akxy.service;
 
+import java.util.List;
+
 /**
  * @author wangp
  */
@@ -32,4 +34,6 @@ public interface IDataAccessService {
     void writeToPlatform(String primaryDb, String customDb, String mineName);
 
     boolean hasNeedAnalysisData();
+
+    void updateMpIdAndAreaId(List<String> childMines);
 }

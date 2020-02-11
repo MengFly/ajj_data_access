@@ -25,4 +25,5 @@ public interface QuakeMapper {
     Integer quakeCount();
 
     int deleteByTimeLessThan(@Param("time") Timestamp time);
+
 }

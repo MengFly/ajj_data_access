@@ -46,4 +46,6 @@ public interface StressMapper {
     Integer stressCount();
 
     int deleteByTimeLessThan(@Param("time") Timestamp time);
+
+    int deleteByMineCodeAndTimeLessThan(@Param("mineCode") String mineCode, @Param("time") Timestamp time);
 }

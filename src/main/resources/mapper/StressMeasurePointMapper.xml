@@ -46,6 +46,11 @@
                 #{memo,jdbcType=VARCHAR}, #{fromTime,jdbcType=TIMESTAMP}, #{toTime,jdbcType=TIMESTAMP})
 
     </insert>
+    <delete id="deleteById">
+        DELETE
+        FROM STRESS_MEASUREPOINT
+        WHERE ID = #{id, jdbcType=DECIMAL}
+    </delete>
 
     <!-- 获取该数据对应的MP_ID -->
     <select id="findIdBy" resultType="java.lang.Long">

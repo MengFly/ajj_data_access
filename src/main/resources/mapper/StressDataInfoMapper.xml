@@ -57,6 +57,11 @@
             dual
         </foreach>
     </insert>
+    <update id="updateAreaIdByMpId">
+        UPDATE STRESS_DATAINFO
+        SET AREA_ID = #{areaId, jdbcType=DECIMAL}
+        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
+    </update>
 
     <!-- 获取最新一天的StressDataInfo信息 -->
     <select id="getDataInfoCache" resultMap="BaseResultMap">
@@ -77,6 +82,11 @@
         FROM STRESS_DATAINFO
         WHERE AREA_ID = #{areaId,jdbcType = DECIMAL}
           AND MP_ID = #{mpId, jdbcType = DECIMAL}
+    </select>
+    <select id="countBy" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM STRESS_DATAINFO
+        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
     </select>
 
 </mapper>
