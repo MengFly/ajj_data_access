@@ -91,5 +91,11 @@
         WHERE AREA_ID = #{areaId, jdbcType = DECIMAL}
           AND MP_ID = #{mpId,jdbcType = DECIMAL}
     </select>
+    <select id="findMaxTimeBy" resultType="java.sql.Timestamp">
+        SELECT MAX(ACQUISITION_TIME)
+        FROM STRESS_TOP_DATAINFO
+        WHERE AREA_ID = #{areaId, jdbcType = DECIMAL}
+          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+    </select>
 
 </mapper>

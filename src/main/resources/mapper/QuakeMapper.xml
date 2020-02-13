@@ -29,22 +29,18 @@
     <sql id="Base_Column_List">
         ID, COLLECTIONTIME, MINECODE, AREANAME, CHCOUNT, SAMPLENGTH, SAMPFREQ,
 		SENSORDIR,
-		INSTALLWAY, SENSITIVITY, SENSORTYPE, X, Y, Z, ENERGY, LEVEL, POSDESC, MAXSWING,
+		INSTALLWAY, SENSITIVITY, SENSORTYPE, X, Y, Z, ENERGY, "LEVEL", POSDESC, MAXSWING,
 		AVGSWING,
 		BASICFREQ, TRIGCH, EXCSTATUS, MEMO
     </sql>
 
     <!-- 从中间库读取Quake数据 -->
-    <select id="readQuakeData" resultMap="BaseResultMap">
+    <select id="readQuakeData" resultMap="BaseResultMap" parameterType="string">
         SELECT
         <include refid="Base_Column_List"/>
         FROM (SELECT
         <include refid="Base_Column_List"/>
-        FROM QUAKE
-        WHERE MINECODE = #{customDB,jdbcType=VARCHAR}
-        AND X <![CDATA[ <> ]]> 0
-        AND Y <![CDATA[ <> ]]> 0
-        AND Z <![CDATA[ <> ]]> 0
+        FROM QUAKE WHERE MINECODE = #{mineDb, jdbcType=VARCHAR}
         ORDER BY COLLECTIONTIME)
         WHERE ROWNUM &lt;= 1000
     </select>

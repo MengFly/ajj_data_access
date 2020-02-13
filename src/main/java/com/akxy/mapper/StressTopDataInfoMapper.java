@@ -1,5 +1,6 @@
 package com.akxy.mapper;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -36,4 +37,7 @@ public interface StressTopDataInfoMapper {
      * @return 个数
      */
     int countBy(@Param("areaId") Long areaId, @Param("mpId") Long mpId);
+
+    Timestamp findMaxTimeBy(@Param("areaId") Long areaId,@Param("mpId") Long mpId);
+
 }

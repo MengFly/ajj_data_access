@@ -6,6 +6,7 @@ import com.akxy.entity.*;
 import com.akxy.mapper.*;
 import com.akxy.service.IDataAccessService;
 import com.akxy.service.ILocalCacheService;
+import com.akxy.util.AreaUtil;
 import com.akxy.util.ParseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -59,9 +60,9 @@ public class DataAccessServiceImpl implements IDataAccessService {
     @Override
     public void configArea(String primaryDb, String customDb, String mineName) {
         List<String> areaNames = localCacheService.getMidAreaNameCache(customDb);
-        DynamicDataSourceContextHolder.setDataSource(customDb);
         int addedAreaCount = 0;
         // 如果没有存工作面信息，添加一个全矿信息
+        DynamicDataSourceContextHolder.setDataSource(customDb);
         if (areaMapper.count() == 0) {
             Long mineId = Long.valueOf(customDb.substring(customDb.lastIndexOf("0") + 1) + "000");
             Area area = Area.newInstance(mineId, "全矿", "0", "0");
@@ -98,12 +99,14 @@ public class DataAccessServiceImpl implements IDataAccessService {
         List<StressDataInfo> stressDataInfos = dataService.optionAllStress(customDb, listStress);
 
         List<StressDataInfo> savedStress = saveStressHistoryData(customDb, mineName, stressDataInfos);
-        // 如果上面存储了新的应力信息，才进行存储更新应力的top表信息
-        if (!savedStress.isEmpty()) {
-            dataService.writeToTopByPoints(customDb, mineName, savedStress);
+        // 如果上面存储了新的应力信息，才进行存储更新应力的top表信息以及后续的操作
+        if (savedStress.isEmpty()) {
+            return;
         }
 
-        writeWarnMineInfo(customDb, mineName, stressDataInfos);
+        dataService.writeToTopByPoints(customDb, mineName, savedStress);
+
+        writeWarnMineInfo(customDb, mineName, savedStress);
 
         DynamicDataSourceContextHolder.setDataSource(primaryDb);
         int deleteCountStress = stressMapper.deleteGroupData(listStress);
@@ -111,7 +114,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
         log.info(">> [{}-{}] 应力数据处理完毕，耗时 {} mms", customDb, mineName, (System.currentTimeMillis() - startTime));
         DynamicDataSourceContextHolder.restoreDataSource();
-        updatePointTime(customDb, mineName, stressDataInfos);
+        updatePointTime(customDb, mineName, savedStress);
     }
 
     private List<StressDataInfo> saveStressHistoryData(String customDb, String mineName, List<StressDataInfo> stressDataInfos) {
@@ -125,15 +128,16 @@ public class DataAccessServiceImpl implements IDataAccessService {
         }
 
         List<StressDataInfo> needSaveDataInfos = new ArrayList<>();
-        Timestamp maxTime = stressDataInfoMapper.findMaxAcquisitionTime();
+        Date newDate = stressTopDataInfoMapper.findNewDate();
+
         // 存储以工作面+测点为键的最大时间(因为存应力数据是要根据工作面和测点来判断的)
         Map<String, Timestamp> areaAndMpMaxTimeMap = new HashMap<>(32);
 
-        if (maxTime == null) {
+        if (newDate == null) {
             needSaveDataInfos = stressInfos;
         } else {
             for (StressDataInfo info : stressInfos) {
-                if (info.getAcquisitionTime().getTime() > maxTime.getTime()) {
+                if (info.getAcquisitionTime().getTime() > newDate.getTime()) {
                     needSaveDataInfos.add(info);
                 } else {
                     String key = info.getAreaId() + "" + info.getMpId();
@@ -141,8 +145,10 @@ public class DataAccessServiceImpl implements IDataAccessService {
                     if (areaAndMpMaxTimeMap.containsKey(key)) {
                         areaAndMpMaxTime = areaAndMpMaxTimeMap.get(key);
                     } else {
-                        areaAndMpMaxTime = stressDataInfoMapper.findMaxAcquisitionTimeBy(info.getAreaId(), info.getMpId());
-                        areaAndMpMaxTimeMap.put(key, areaAndMpMaxTime);
+                        areaAndMpMaxTime = stressTopDataInfoMapper.findMaxTimeBy(info.getAreaId(), info.getMpId());
+                        if (areaAndMpMaxTime != null) {
+                            areaAndMpMaxTimeMap.put(key, areaAndMpMaxTime);
+                        }
                     }
                     if (areaAndMpMaxTime == null || info.getAcquisitionTime().getTime() > areaAndMpMaxTime.getTime()) {
                         needSaveDataInfos.add(info);
@@ -174,28 +180,12 @@ public class DataAccessServiceImpl implements IDataAccessService {
             log.error("Copy error", e);
         }
         log.info(">> [{}-{}] 开始处理微震数据({})条", customDb, mineName, quakes.size());
-        try {
-
-
+        try (AreaUtil areaUtil = new AreaUtil()) {
             List<PosResult> needInsertPos = new ArrayList<>();
             DynamicDataSourceContextHolder.setDataSource(customDb);
             String quakeWarnConfig = configMapper.getConfigInfo("WZ", "WARNING").getStrValue();
-            Map<String, Long> areaIds = new ConcurrentHashMap<>();
             for (Quake quake : quakes) {
-                Long areaId = null;
-                Long orDefault = areaIds.getOrDefault(quake.getAreaname(), null);
-                if (orDefault == null) {
-                    Long idByName = areaMapper.findIdByName(quake.getAreaname());
-                    if (idByName != null) {
-                        areaIds.put(quake.getAreaname(), idByName);
-                        areaId = idByName;
-                    }
-                } else {
-                    areaId = orDefault;
-                }
-                if (areaId == null) {
-                    areaId = Long.valueOf(customDb.substring(customDb.lastIndexOf("0") + 1) + "0001");
-                }
+                Long areaId = areaUtil.getId(quake.getAreaname(), customDb, areaMapper);
                 PosResult posResult = dataService.assemblePosResult(areaId, quake, quakeWarnConfig);
                 if (posResultMapper.count(posResult) == 0) {
                     needInsertPos.add(posResult);
@@ -203,6 +193,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
             }
             if (!needInsertPos.isEmpty()) {
                 Optional<PosResult> max = needInsertPos.stream().max(Comparator.comparing(PosResult::getCollectTime));
+                DynamicDataSourceContextHolder.setDataSource(customDb);
                 int insertCount = posResultMapper.insertGroupData(needInsertPos);
                 log.info(">> [{}-{}] 成功存入微震({})条, 最新时间:{}",
                         customDb, mineName, insertCount, ParseUtil.format(max.get().getCollectTime()));
@@ -355,11 +346,11 @@ public class DataAccessServiceImpl implements IDataAccessService {
             }
         }
 
-        DynamicDataSourceContextHolder.setDataSource(primaryDb);
-        if (stressTopNewDate != null) {
-            int stressDelete = stressMapper.deleteByMineCodeAndTimeLessThan(customDb, new Timestamp(stressTopNewDate.getTime()));
-            log.info("[{}-{}] 删除{}之前应力数据({}) 条", customDb, mineName, ParseUtil.format(stressTopNewDate), stressDelete);
-        }
+//        DynamicDataSourceContextHolder.setDataSource(primaryDb);
+//        if (stressTopNewDate != null) {
+//            int stressDelete = stressMapper.deleteByMineCodeAndTimeLessThan(customDb, new Timestamp(stressTopNewDate.getTime()));
+//            log.info("[{}-{}] 删除{}之前应力数据({}) 条", customDb, mineName, ParseUtil.format(stressTopNewDate), stressDelete);
+//        }
 
         // 此逻辑只有在济矿的服务里面才要起作用
         updateMineNewestTime(primaryDb, customDb, mineName, stressTopNewDate, quakeTopNewDate);
@@ -420,7 +411,8 @@ public class DataAccessServiceImpl implements IDataAccessService {
             DynamicDataSourceContextHolder.setDataSource(childMine);
             List<StressMeasurePoint> allPoint = stressMeasurePointMapper.getAllPoint();
             for (StressMeasurePoint stressMeasurePoint : allPoint) {
-                int i = stressDataInfoMapper.updateAreaIdByMpId(stressMeasurePoint.getId(), stressMeasurePoint.getAreaId());
+//                int i = stressDataInfoMapper.updateAreaIdByMpId(stressMeasurePoint.getId(), stressMeasurePoint.getAreaId());
+                int i = stressDataInfoMapper.updateMpNameByMpId(stressMeasurePoint.getId(), stressMeasurePoint.getName());
                 log.info("{}测点{}更新数据{}条", childMine, stressMeasurePoint.getId(), i);
                 if (stressDataInfoMapper.countBy(stressMeasurePoint.getId()) == 0) {
                     stressMeasurePointMapper.deleteById(stressMeasurePoint.getId());

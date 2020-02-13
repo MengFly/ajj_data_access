@@ -44,4 +44,6 @@ public interface StressDataInfoMapper {
     int updateAreaIdByMpId(@Param("mpId") Long mpId,@Param("areaId") Long areaId);
 
     int countBy(@Param("mpId") Long mpId);
+
+    int updateMpNameByMpId(@Param("mpId") Long id,@Param("mpName") String name);
 }

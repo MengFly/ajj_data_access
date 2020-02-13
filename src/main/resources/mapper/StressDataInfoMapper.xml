@@ -61,6 +61,13 @@
         UPDATE STRESS_DATAINFO
         SET AREA_ID = #{areaId, jdbcType=DECIMAL}
         WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
+          AND AREA_ID &lt;&gt; #{areaId, jdbcType=DECIMAL}
+    </update>
+    <update id="updateMpNameByMpId">
+        UPDATE STRESS_DATAINFO
+        SET MP_NAME = #{mpName, jdbcType=VARCHAR}
+        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
+          AND MP_NAME &lt;&gt; #{mpName, jdbcType=VARCHAR}
     </update>
 
     <!-- 获取最新一天的StressDataInfo信息 -->

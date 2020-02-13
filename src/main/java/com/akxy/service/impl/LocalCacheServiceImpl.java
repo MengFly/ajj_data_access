@@ -7,9 +7,7 @@ import com.akxy.service.ILocalCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,13 +35,22 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
         // 中间库数据库
         DynamicDataSourceContextHolder.setDataSource(primaryDb);
         // 1000 条应力数据
-        midDataBaseCache.put("STRESS" + mineDb, stressMapper.readStressData(mineDb));
+        List<Stress> stressList = stressMapper.readStressData(mineDb);
+        midDataBaseCache.put("STRESS" + mineDb, stressList);
         // 1000 条微震信息
-        midDataBaseCache.put("QUAKE" + mineDb, quakeMapper.readQuakeData(mineDb));
+        List<Quake> quakeList = quakeMapper.readQuakeData(mineDb);
+        midDataBaseCache.put("QUAKE" + mineDb, quakeList);
         // 本矿区信息
         midDataBaseCache.put("MINE" + mineDb, mineMapper.listMines(mineDb));
         // 应力数据中包含的工作面信息
-        midDataBaseCache.put("AREANAME" + mineDb, stressMapper.getAllAreaName(mineDb));
+        Set<String> areaList = new HashSet<>();
+        if (stressList != null) {
+            areaList.addAll(stressList.stream().map(Stress::getAreaname).parallel().distinct().collect(Collectors.toList()));
+        }
+        if (quakeList != null) {
+            areaList.addAll(quakeList.stream().map(Quake::getAreaname).parallel().distinct().collect(Collectors.toList()));
+        }
+        midDataBaseCache.put("AREANAME" + mineDb, new ArrayList<>(areaList));
         DynamicDataSourceContextHolder.restoreDataSource();
     }
 

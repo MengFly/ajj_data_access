@@ -20,7 +20,7 @@ public interface QuakeMapper {
      *
      * @return 返回Quake数据组成的List集合
      */
-    List<Quake> readQuakeData(@Param("customDB") String customDB);
+    List<Quake> readQuakeData(@Param("mineDb") String mineDb);
 
     Integer quakeCount();
 

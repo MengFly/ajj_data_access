@@ -57,15 +57,7 @@ public class AutomateRun implements ApplicationRunner {
         new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "main"))
                 .scheduleWithFixedDelay(() -> {
                     lastStepTime = System.currentTimeMillis();
-                    boolean isHandleData = dataAccessController.readAndCalculate(childMines, globalStep++);
-                    if (!isHandleData) {
-                        log.info("矿区没有数据需要分析 SLEEP {} S", TIME_INTERVAL_SECOND);
-                        try {
-                            TimeUnit.SECONDS.sleep(TIME_INTERVAL_SECOND);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    dataAccessController.readAndCalculate(childMines, globalStep++);
                     log.info("[Step {}] 处理结束，耗时 {}mms", globalStep, (System.currentTimeMillis() - lastStepTime));
                 }, 0, TIME_INTERVAL_SECOND, TimeUnit.SECONDS);
     }
