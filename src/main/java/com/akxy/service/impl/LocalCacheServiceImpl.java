@@ -40,8 +40,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
         // 1000 条微震信息
         List<Quake> quakeList = quakeMapper.readQuakeData(mineDb);
         midDataBaseCache.put("QUAKE" + mineDb, quakeList);
-        // 本矿区信息
-        midDataBaseCache.put("MINE" + mineDb, mineMapper.listMines(mineDb));
         // 应力数据中包含的工作面信息
         Set<String> areaList = new HashSet<>();
         if (stressList != null) {
@@ -67,12 +65,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     }
 
     @Override
-    public List<Mine> getMidMineCache(String mineDb) {
-        Object orDefault = midDataBaseCache.getOrDefault("MINE" + mineDb, null);
-        return orDefault == null ? Collections.emptyList() : (List<Mine>) orDefault;
-    }
-
-    @Override
     public List<String> getMidAreaNameCache(String mineDb) {
         Object orDefault = midDataBaseCache.getOrDefault("AREANAME" + mineDb, null);
         return orDefault == null ? Collections.emptyList() :
@@ -80,17 +72,9 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     }
 
     @Override
-    public void restoreAllMidCache() {
-        midDataBaseCache.clear();
-    }
-
-    @Override
-    public String getMineName(String mineDb) {
-        List<Mine> curMineCache = getMidMineCache(mineDb);
-        if (curMineCache.isEmpty()) {
-            return "UNKNOWN";
-        } else {
-            return curMineCache.get(0).getName();
-        }
+    public void restoreMineCache(String mineCode) {
+        midDataBaseCache.remove("STRESS" + mineCode);
+        midDataBaseCache.remove("QUAKE" + mineCode);
+        midDataBaseCache.remove("AREANAME" + mineCode);
     }
 }

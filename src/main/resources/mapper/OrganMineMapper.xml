@@ -19,11 +19,8 @@
         <result column="OPERATE_TIME" property="operateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <!-- 根据矿名查看ID -->
-    <select id="findIDByName" resultType="java.lang.String">
-        SELECT "ID" || ',' || "NAME"
-        FROM ORGAN_MINE
-        WHERE "NAME" LIKE concat(#{name,jdbcType=VARCHAR}, '%')
+    <select id="findNameById" resultType="java.lang.String">
+        SELECT NAME FROM ORGAN_MINE WHERE ID = #{id, jdbcType=VARCHAR}
     </select>
 
 </mapper>

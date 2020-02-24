@@ -17,9 +17,9 @@
         <result column="TUNNELNAME" property="tunnelname" jdbcType="VARCHAR"/>
         <result column="NAME" property="name" jdbcType="VARCHAR"/>
         <result column="VALUE" property="value" jdbcType="FLOAT"/>
-        <result column="X" property="x" jdbcType="FLOAT"/>
-        <result column="Y" property="y" jdbcType="FLOAT"/>
-        <result column="Z" property="z" jdbcType="FLOAT"/>
+        <result column="X" property="x" jdbcType="NUMERIC" javaType="double"/>
+        <result column="Y" property="y" jdbcType="NUMERIC" javaType="double"/>
+        <result column="Z" property="z" jdbcType="NUMERIC" javaType="double"/>
         <result column="DEPTH" property="depth" jdbcType="FLOAT"/>
         <result column="DISTANCE" property="distance" jdbcType="FLOAT"/>
         <result column="INITIALVALUE" property="initialvalue" jdbcType="FLOAT"/>
@@ -29,11 +29,11 @@
         <result column="MEMO" property="memo" jdbcType="VARCHAR"/>
     </resultMap>
     <sql id="Base_Column_List">
-        ID, COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE,
+        "ID", COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE,
 		STRESSTYPE,
-		RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, NAME, VALUE, X, Y, Z,
+		RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, "NAME", "VALUE", X, Y, Z,
 		DEPTH,
-		DISTANCE, INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, MEMO
+		"DISTANCE", INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, "MEMO"
     </sql>
 
     <!-- 从中间库读取Stress数据 WHERE ROWNUM <![CDATA[ <= ]]> 1000 -->

@@ -208,7 +208,7 @@ public class DataUtil {
     /**
      * 遍历所有测点的最新数据，并写入STRESS_TOP_DATAINFO表中
      */
-    public void writeToTopByPoints(String customDb, String mineName, List<StressDataInfo> stressDataInfos) {
+    public void writeToTopByPoints(String customDb, List<StressDataInfo> stressDataInfos) {
         Map<String, StressTopDataInfo> needInsertTopInfos = new HashMap<>(32);
         Map<String, StressTopDataInfo> needUpdateTopInfos = new HashMap<>(32);
         DynamicDataSourceContextHolder.setDataSource(customDb);
@@ -246,12 +246,12 @@ public class DataUtil {
         DynamicDataSourceContextHolder.setDataSource(customDb);
         if (!needInsertTopInfos.isEmpty()) {
             int insertCount = stressTopDataInfoMapper.insertGroupData(new ArrayList<>(needInsertTopInfos.values()));
-            log.info(">> [{}-{}] 应力Top需新增({})条，成功新增({})条", customDb, mineName, needInsertTopInfos.size(), insertCount);
+            log.info(">> [{}] 应力Top需新增({})条，成功新增({})条", customDb, needInsertTopInfos.size(), insertCount);
         }
         if (!needUpdateTopInfos.isEmpty()) {
             needUpdateTopInfos.values().forEach(stressTopDataInfo ->
                     stressTopDataInfoMapper.updateTopData(stressTopDataInfo));
-            log.info(">> [{}-{}] 应力Top更新({}) 条", customDb, mineName, needUpdateTopInfos.size());
+            log.info(">> [{}] 应力Top更新({}) 条", customDb, needUpdateTopInfos.size());
         }
 
     }
@@ -289,8 +289,8 @@ public class DataUtil {
         return warnStatus;
     }
 
-    public ConnStatus getStressConStatus(String customDb, Mine mine, Date stressTopNewDate, int topNewDate) {
-        ConnStatus connStatus = getConnStatus(customDb, mine, stressTopNewDate, topNewDate);
+    public ConnStatus getStressConStatus(String customDb, String mineName,Date stressTopNewDate, int topNewDate) {
+        ConnStatus connStatus = getConnStatus(customDb, mineName,stressTopNewDate, topNewDate);
         if (connStatus == null) {
             return null;
         }
@@ -298,8 +298,8 @@ public class DataUtil {
         return connStatus;
     }
 
-    public ConnStatus getQuakeConStatus(String customDb, Mine mine, Date quakeTopNewDate, int quakeTopTimeOut) {
-        ConnStatus connStatus = getConnStatus(customDb, mine, quakeTopNewDate, quakeTopTimeOut);
+    public ConnStatus getQuakeConStatus(String customDb,String mineName,Date quakeTopNewDate, int quakeTopTimeOut) {
+        ConnStatus connStatus = getConnStatus(customDb,mineName, quakeTopNewDate, quakeTopTimeOut);
         if (connStatus == null) {
             return null;
         }
@@ -307,22 +307,16 @@ public class DataUtil {
         return connStatus;
     }
 
-    public ConnStatus getConnStatus(String customDb, Mine mine, Date stressTopNewDate, int topNewDate) {
+    public ConnStatus getConnStatus(String customDb, String mineName,Date stressTopNewDate, int topNewDate) {
         ConnStatus connStatus = new ConnStatus();
         DynamicDataSourceContextHolder.setDataSource(customDb);
         Short warnValue = areaTopDataInfoMapper.findAreaValue();
         DynamicDataSourceContextHolder.setDataSource("1000");
-        String idAndName = organMineMapper.findIDByName(mine.getName() + "%");
-        if (idAndName == null) {
-            return null;
-        } else {
-            connStatus.setMineCode(idAndName.substring(0, idAndName.indexOf(",")));
-        }
-        connStatus.setMineName(idAndName.substring(idAndName.indexOf(",") + 1));
-        Date curDate = new Date();
+        connStatus.setMineCode(customDb);
+        connStatus.setMineName(mineName);
         int deviationStress;
         if (stressTopNewDate != null) {
-            deviationStress = (int) ((curDate.getTime() - stressTopNewDate.getTime()) / (1000 * 60));
+            deviationStress = (int) ((System.currentTimeMillis() - stressTopNewDate.getTime()) / (1000 * 60));
             if (deviationStress > topNewDate) {
                 connStatus.setConnStatus("0");
             } else {

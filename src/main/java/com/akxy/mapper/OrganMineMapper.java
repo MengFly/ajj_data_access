@@ -6,8 +6,5 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface OrganMineMapper {
 
-    /**
-     * 根据矿名查看ID
-     */
-    String findIDByName(@Param("name") String name);
+    String findNameById(@Param("id") String id);
 }

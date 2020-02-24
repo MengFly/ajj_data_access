@@ -7,10 +7,8 @@
         <result column="NAME" property="name" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <!-- 遍历数据库配置表 -->
-    <select id="listMines" resultMap="BaseResultMap">
-        SELECT MINECODE, MINENAME, NAME
-        FROM MINE
-        WHERE MINECODE = #{MINECODE,jdbcType=VARCHAR}
+
+    <select id="findNameByCode" resultType="java.lang.String">
+        SELECT NAME FROM MINE WHERE MINECODE = #{mineCode, jdbcType=VARCHAR} AND ROWNUM = 1
     </select>
 </mapper>
