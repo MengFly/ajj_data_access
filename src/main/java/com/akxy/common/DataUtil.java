@@ -126,12 +126,31 @@ public class DataUtil {
             stressDataInfo.setX(stress.getX());
             stressDataInfo.setY(stress.getY());
             stressDataInfo.setZ(stress.getZ());
-            stressDataInfo.setYellowValue(BigDecimal.valueOf(stress.getYellowwarn()));
-            stressDataInfo.setRedValue(BigDecimal.valueOf(stress.getRedwarn()));
+            Double yellowwarn = stress.getYellowwarn();
+            if (yellowwarn != null) {
+                if (yellowwarn >= 100) {
+                    stressDataInfo.setYellowValue(BigDecimal.valueOf(99));
+                } else {
+                    stressDataInfo.setYellowValue(BigDecimal.valueOf(ParseUtil.numberDigist(yellowwarn, 2)));
+                }
+            } else {
+                stressDataInfo.setYellowValue(BigDecimal.ZERO);
+            }
+            Double redwarn = stress.getRedwarn();
+            if (redwarn != null) {
+                if (redwarn >= 100) {
+                    stressDataInfo.setRedValue(BigDecimal.valueOf(99));
+                } else {
+                    stressDataInfo.setRedValue(BigDecimal.valueOf(ParseUtil.numberDigist(redwarn, 2)));
+                }
+            } else {
+                stressDataInfo.setRedValue(BigDecimal.ZERO);
+            }
             if (stress.getInitialvalue() == 0) {
                 stressDataInfo.setZfIndex(0.);
             } else {
-                stressDataInfo.setZfIndex((stress.getValue() - stress.getInitialvalue()) / stress.getInitialvalue());
+                double zf = (stress.getValue() - stress.getInitialvalue()) / stress.getInitialvalue();
+                stressDataInfo.setZfIndex(ParseUtil.numberDigist(zf, 4));
             }
         } catch (Exception e) {
             log.info("{},{} EXCEPTION=>{}", customDb, stress, e);
@@ -289,8 +308,8 @@ public class DataUtil {
         return warnStatus;
     }
 
-    public ConnStatus getStressConStatus(String customDb, String mineName,Date stressTopNewDate, int topNewDate) {
-        ConnStatus connStatus = getConnStatus(customDb, mineName,stressTopNewDate, topNewDate);
+    public ConnStatus getStressConStatus(String customDb, String mineName, Date stressTopNewDate, int topNewDate) {
+        ConnStatus connStatus = getConnStatus(customDb, mineName, stressTopNewDate, topNewDate);
         if (connStatus == null) {
             return null;
         }
@@ -298,8 +317,8 @@ public class DataUtil {
         return connStatus;
     }
 
-    public ConnStatus getQuakeConStatus(String customDb,String mineName,Date quakeTopNewDate, int quakeTopTimeOut) {
-        ConnStatus connStatus = getConnStatus(customDb,mineName, quakeTopNewDate, quakeTopTimeOut);
+    public ConnStatus getQuakeConStatus(String customDb, String mineName, Date quakeTopNewDate, int quakeTopTimeOut) {
+        ConnStatus connStatus = getConnStatus(customDb, mineName, quakeTopNewDate, quakeTopTimeOut);
         if (connStatus == null) {
             return null;
         }
@@ -307,7 +326,7 @@ public class DataUtil {
         return connStatus;
     }
 
-    public ConnStatus getConnStatus(String customDb, String mineName,Date stressTopNewDate, int topNewDate) {
+    public ConnStatus getConnStatus(String customDb, String mineName, Date stressTopNewDate, int topNewDate) {
         ConnStatus connStatus = new ConnStatus();
         DynamicDataSourceContextHolder.setDataSource(customDb);
         Short warnValue = areaTopDataInfoMapper.findAreaValue();

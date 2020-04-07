@@ -40,4 +40,17 @@ public class ParseUtil {
         }
     }
 
+
+    /**
+     * 保留几位小数
+     *
+     * @param number    要转化的数
+     * @param digitsNum 保留的小数位数
+     */
+    public static double numberDigist(Double number, int digitsNum) {
+        int pow = (int) Math.pow(10, digitsNum);
+        int mulPowNum = (int) Math.round(number * pow);
+        return mulPowNum * 1.0 / pow;
+    }
+
 }

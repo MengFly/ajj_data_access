@@ -49,4 +49,6 @@ public interface StressMeasurePointMapper {
     void updateFromTime(ArrayList<StressMeasurePoint> stressMeasurePoints);
 
     void deleteById(@Param("id") Long id);
+
+    void updateMpName(ArrayList<StressMeasurePoint> stressMeasurePoints);
 }

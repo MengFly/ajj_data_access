@@ -19,31 +19,32 @@
         <result column="TO_TIME" jdbcType="TIMESTAMP" property="toTime"/>
     </resultMap>
     <sql id="Base_Column_List">
-        id, AREA_ID, name, TUNNEL_NAME, x, y, z, depth, distance, INITIAL_VALUE, YELLOW_WARNVALUE, RED_WARNVALUE, memo,FROM_TIME,TO_TIME
+        id, AREA_ID, name, TUNNEL_NAME, x, y, z, depth, distance, INITIAL_VALUE, YELLOW_WARNVALUE, RED_WARNVALUE,
+        memo,FROM_TIME,TO_TIME
     </sql>
     <!-- 插入测点 -->
     <insert id="writeMeasurePoint">
         INSERT INTO STRESS_MEASUREPOINT (ID,
-                                         AREA_ID,
-                                         NAME,
-                                         TUNNEL_NAME,
-                                         X,
-                                         Y,
-                                         Z,
-                                         DEPTH,
-                                         DISTANCE,
-                                         INITIAL_VALUE,
-                                         YELLOW_WARNVALUE,
-                                         RED_WARNVALUE,
-                                         MEMO,
-                                         FROM_TIME,
-                                         TO_TIME)
+        AREA_ID,
+        NAME,
+        TUNNEL_NAME,
+        X,
+        Y,
+        Z,
+        DEPTH,
+        DISTANCE,
+        INITIAL_VALUE,
+        YELLOW_WARNVALUE,
+        RED_WARNVALUE,
+        MEMO,
+        FROM_TIME,
+        TO_TIME)
         VALUES (#{id,jdbcType=DECIMAL}, #{areaId,jdbcType=DECIMAL}, #{name,jdbcType=VARCHAR},
-                #{tunnelName,jdbcType=VARCHAR},
-                #{x,jdbcType=FLOAT}, #{y,jdbcType=FLOAT}, #{z,jdbcType=FLOAT}, #{depth,jdbcType=FLOAT},
-                #{distance,jdbcType=FLOAT},
-                #{initialValue,jdbcType=FLOAT}, #{yellowWarnvalue,jdbcType=FLOAT}, #{redWarnvalue,jdbcType=FLOAT},
-                #{memo,jdbcType=VARCHAR}, #{fromTime,jdbcType=TIMESTAMP}, #{toTime,jdbcType=TIMESTAMP})
+        #{tunnelName,jdbcType=VARCHAR},
+        #{x,jdbcType=FLOAT}, #{y,jdbcType=FLOAT}, #{z,jdbcType=FLOAT}, #{depth,jdbcType=FLOAT},
+        #{distance,jdbcType=FLOAT},
+        #{initialValue,jdbcType=FLOAT}, #{yellowWarnvalue,jdbcType=FLOAT}, #{redWarnvalue,jdbcType=FLOAT},
+        #{memo,jdbcType=VARCHAR}, #{fromTime,jdbcType=TIMESTAMP}, #{toTime,jdbcType=TIMESTAMP})
 
     </insert>
     <delete id="deleteById">
@@ -57,10 +58,10 @@
         select id
         from STRESS_MEASUREPOINT
         where AREA_ID = #{areaId, jdbcType=DECIMAL}
-          AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
-          and depth = #{depth,jdbcType=FLOAT}
-          and distance = #{distance,jdbcType=FLOAT}
-          AND ROWNUM = 1
+        AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
+        and depth = #{depth,jdbcType=FLOAT}
+        and distance = #{distance,jdbcType=FLOAT}
+        AND ROWNUM = 1
     </select>
 
     <!-- 得到所有测点信息 -->
@@ -73,9 +74,9 @@
         SELECT COUNT(*)
         FROM STRESS_MEASUREPOINT
         WHERE AREA_ID = #{areaId, jdbcType=DECIMAL}
-          AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
-          AND DISTANCE = #{distance,jdbcType=FLOAT}
-          AND DEPTH = #{depth, jdbcType=FLOAT}
+        AND TUNNEL_NAME = #{tunnelName,jdbcType=VARCHAR}
+        AND DISTANCE = #{distance,jdbcType=FLOAT}
+        AND DEPTH = #{depth, jdbcType=FLOAT}
     </select>
     <select id="findMaxId" resultType="java.lang.Long">
         SELECT MAX(ID)
@@ -95,6 +96,14 @@
             set
             p.FROM_TIME=#{item.fromTime,jdbcType=TIMESTAMP}
             where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.FROM_TIME &gt; #{item.fromTime,jdbcType=TIMESTAMP}
+        </foreach>
+    </update>
+    <update id="updateMpName" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
+            update STRESS_MEASUREPOINT p
+            set
+            p.NAME=#{item.name,jdbcType=VARCHAR}
+            where p."ID"=#{item.id,jdbcType=DECIMAL}
         </foreach>
     </update>
 

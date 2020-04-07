@@ -114,7 +114,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
         dataService.writeToTopByPoints(customDb, savedStress);
         writeWarnMineInfo(customDb, savedStress);
-        updatePointTime(customDb, savedStress);
+        updatePointTimeAndName(customDb, savedStress);
         log.info(">> [{}] 应力数据处理完毕，耗时 {} mms", customDb, (System.currentTimeMillis() - startTime));
     }
 
@@ -256,7 +256,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
     }
 
-    public void updatePointTime(String customDb, List<StressDataInfo> stressDataInfos) {
+    public void updatePointTimeAndName(String customDb, List<StressDataInfo> stressDataInfos) {
         try {
             Map<Long, StressMeasurePoint> mpIdMinTimeMap = new HashMap<>(16);
             Map<Long, StressMeasurePoint> mpIdMaxTimeMap = new HashMap<>(16);
@@ -270,6 +270,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
                 if (!mpIdMaxTimeMap.containsKey(mpId)) {
                     measurePoint = new StressMeasurePoint();
                     measurePoint.setId(mpId);
+                    measurePoint.setName(stressDataInfo.getMpName());
                     measurePoint.setToTime(acquisitionTime);
                     mpIdMaxTimeMap.put(mpId, measurePoint);
                 } else {
@@ -297,6 +298,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
             DynamicDataSourceContextHolder.setDataSource(customDb);
             if (!mpIdMaxTimeMap.isEmpty()) {
                 stressMeasurePointMapper.updateToTime(new ArrayList<>(mpIdMaxTimeMap.values()));
+                stressMeasurePointMapper.updateMpName(new ArrayList<>(mpIdMaxTimeMap.values()));
             }
             if (!mpIdMinTimeMap.isEmpty()) {
                 stressMeasurePointMapper.updateFromTime(new ArrayList<>(mpIdMinTimeMap.values()));
@@ -352,7 +354,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
         }
 
         // 此逻辑只有在济矿的服务里面才要起作用
-        updateMineNewestTime(primaryDb, customDb, stressTopNewDate, quakeTopNewDate);
+//        updateMineNewestTime(primaryDb, customDb, stressTopNewDate, quakeTopNewDate);
     }
 
     private void updateMineNewestTime(String primaryDb, String customDb, Date stressTopNewDate, Date quakeTopNewDate) {

@@ -87,7 +87,7 @@ public class AutomateRun implements ApplicationRunner {
                     readAndCalculate(mineCode);
                     TimeUnit.SECONDS.sleep(TIME_INTERVAL_SECOND);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("分析出错", e);
                 } finally {
                     log.info(">>>>>>>>>>>>>> [Step {}] DataAccess Service End {}mms<<<<<<<<<<<<<<<", step++,
                             (System.currentTimeMillis() - lastStepTime.getOrDefault(mineCode, 0L)));
