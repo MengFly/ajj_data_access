@@ -25,7 +25,7 @@
 
     <sql id="Base_Column_List">
         acquisition_time, area_id, mp_id, mp_name, p_value, x, y, z, warn_status, red_value,
-    yellow_value, distance, depth, memo
+        yellow_value, distance, depth, memo
     </sql>
     <!-- 批量插入Stress_Top_DataInfo -->
     <insert id="insertGroupData" parameterType="java.util.List">
@@ -56,22 +56,24 @@
     </insert>
 
     <!-- 更新Top表 -->
-    <update id="updateTopData">
-        update STRESS_TOP_DATAINFO
-        set ACQUISITION_TIME=#{acquisitionTime,jdbcType = TIMESTAMP},
-            MP_NAME=#{mpName,jdbcType = VARCHAR},
-            P_VALUE=#{pValue,jdbcType = FLOAT},
-            X=#{x,jdbcType = FLOAT},
-            Y=#{y,jdbcType = FLOAT},
-            Z=#{z,jdbcType = FLOAT},
-            WARN_STATUS=#{warnStatus,jdbcType = DECIMAL},
-            RED_VALUE=#{redValue,jdbcType = DECIMAL},
-            YELLOW_VALUE=#{yellowValue,jdbcType = DECIMAL},
-            DISTANCE=#{distance,jdbcType = DECIMAL},
-            DEPTH=#{depth,jdbcType = DECIMAL},
-            MEMO=#{memo,jdbcType = VARCHAR}
-        WHERE AREA_ID = #{areaId,jdbcType = DECIMAL}
-          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+    <update id="updateTopData" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
+            update STRESS_TOP_DATAINFO
+            set ACQUISITION_TIME=#{item.acquisitionTime,jdbcType = TIMESTAMP},
+            MP_NAME=#{item.mpName,jdbcType = VARCHAR},
+            P_VALUE=#{item.pValue,jdbcType = FLOAT},
+            X=#{item.x,jdbcType = FLOAT},
+            Y=#{item.y,jdbcType = FLOAT},
+            Z=#{item.z,jdbcType = FLOAT},
+            WARN_STATUS=#{item.warnStatus,jdbcType = DECIMAL},
+            RED_VALUE=#{item.redValue,jdbcType = DECIMAL},
+            YELLOW_VALUE=#{item.yellowValue,jdbcType = DECIMAL},
+            DISTANCE=#{item.distance,jdbcType = DECIMAL},
+            DEPTH=#{item.depth,jdbcType = DECIMAL},
+            MEMO=#{item.memo,jdbcType = VARCHAR}
+            WHERE AREA_ID = #{item.areaId,jdbcType = DECIMAL}
+            AND MP_ID = #{item.mpId,jdbcType = DECIMAL}
+        </foreach>
     </update>
 
     <select id="findNewDate" resultType="java.util.Date">
@@ -89,13 +91,13 @@
         SELECT COUNT(*)
         FROM STRESS_TOP_DATAINFO
         WHERE AREA_ID = #{areaId, jdbcType = DECIMAL}
-          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+        AND MP_ID = #{mpId,jdbcType = DECIMAL}
     </select>
     <select id="findMaxTimeBy" resultType="java.sql.Timestamp">
         SELECT MAX(ACQUISITION_TIME)
         FROM STRESS_TOP_DATAINFO
         WHERE AREA_ID = #{areaId, jdbcType = DECIMAL}
-          AND MP_ID = #{mpId,jdbcType = DECIMAL}
+        AND MP_ID = #{mpId,jdbcType = DECIMAL}
     </select>
 
 </mapper>

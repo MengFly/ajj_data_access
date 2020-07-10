@@ -3,6 +3,7 @@ package com.akxy.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.akxy.common.StressMeasurePointUpdateItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -44,9 +45,9 @@ public interface StressMeasurePointMapper {
 
     Long findMaxId();
 
-    void updateToTime(ArrayList<StressMeasurePoint> stressMeasurePoints);
+    void updateToTime(ArrayList<StressMeasurePointUpdateItem> stressMeasurePoints);
 
-    void updateFromTime(ArrayList<StressMeasurePoint> stressMeasurePoints);
+    void updateFromTime(ArrayList<StressMeasurePointUpdateItem> stressMeasurePoints);
 
     void deleteById(@Param("id") Long id);
 

@@ -34,6 +34,4 @@ public interface IDataAccessService {
     void writeToPlatform(String primaryDb, String customDb);
 
     boolean hasNeedAnalysisData();
-
-    void updateMpIdAndAreaId(List<String> childMines);
 }

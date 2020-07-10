@@ -27,7 +27,7 @@ public interface StressTopDataInfoMapper {
     /**
      * 更新Top表
      */
-    void updateTopData(StressTopDataInfo stressTopDataInfo);
+    void updateTopData(List<StressTopDataInfo> stressTopDataInfo);
 
     /**
      * 根据工作面Id和测点Id查询top表数据个数

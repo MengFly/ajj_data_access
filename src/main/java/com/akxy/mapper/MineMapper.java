@@ -6,6 +6,6 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface MineMapper {
 
-   String findNameByCode(@Param("mineCode") String mineCode);
+    String findNameByCode(@Param("mineCode") String mineCode);
 
 }

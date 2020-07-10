@@ -1,6 +1,7 @@
 package com.akxy.configuration;
 
 import com.akxy.common.SqlCheckInterceptor;
+import com.alibaba.druid.pool.DruidDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -38,22 +39,22 @@ import java.util.Map;
 @Slf4j
 @Configuration
 public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar, EnvironmentAware {
-	/**
-	 * 默认的数据源类型
-	 */
+    /**
+     * 默认的数据源类型
+     */
     private static final String DEFAULT_DATASOUCE_TYPE = "com.alibaba.druid.pool.DruidDataSource";
     /**
      * 默认数据源
      */
     private DataSource defaultDataSource;
-	/**
-	 * 数据源公共属性
-	 */
-	private PropertyValues dataSourcePropertyValues;
-	/**
-	 * 其他数据源
-	 */
-	private Map<String, DataSource> customDataSources = new HashMap<>();
+    /**
+     * 数据源公共属性
+     */
+    private PropertyValues dataSourcePropertyValues;
+    /**
+     * 其他数据源
+     */
+    private Map<String, DataSource> customDataSources = new HashMap<>();
 
     public String dataSources;
 
@@ -97,8 +98,13 @@ public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar,
             String url = dataSourceMap.get("url").toString();
             String username = dataSourceMap.get("username").toString();
             String password = dataSourceMap.get("password").toString();
-            return DataSourceBuilder.create().type(dataSourceType).driverClassName(driverClassName).url(url)
-                    .username(username).password(password).build();
+            final DruidDataSource build = ((DruidDataSource) DataSourceBuilder.create()
+                    .type(dataSourceType).driverClassName(driverClassName).url(url)
+                    .username(username).password(password).build());
+            build.setSharePreparedStatements(true);
+            build.setPoolPreparedStatements(true);
+            build.setMaxOpenPreparedStatements(100);
+            return build;
         } catch (ClassNotFoundException e) {
             log.error("创建数据源失败：{}", e.getMessage(), e);
             return null;
@@ -136,7 +142,7 @@ public class DynamicDataSourceRegister implements ImportBeanDefinitionRegistrar,
     private void initCustomDataSources(Environment env) {
         RelaxedPropertyResolver resolver = new RelaxedPropertyResolver(env, "custom.datasource.");
         String dataSourceNames = resolver.getProperty("names");
-        if(dataSourceNames == null) {
+        if (dataSourceNames == null) {
             return;
         }
         this.dataSources = dataSourceNames;

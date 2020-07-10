@@ -30,10 +30,10 @@
     </resultMap>
     <sql id="Base_Column_List">
         "ID", COLLECTIONTIME, MINECODE, AREANAME, AREATYPE, SYSTEMNAME, SYSTEMTYPE,
-		STRESSTYPE,
-		RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, "NAME", "VALUE", X, Y, Z,
-		DEPTH,
-		"DISTANCE", INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, "MEMO"
+        STRESSTYPE,
+        RTVPOS, INSTALLTIME, STRESSNO, STRESSDIR, TUNNELNAME, "NAME", "VALUE", X, Y, Z,
+        DEPTH,
+        "DISTANCE", INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, "MEMO"
     </sql>
 
     <!-- 从中间库读取Stress数据 WHERE ROWNUM <![CDATA[ <= ]]> 1000 -->
@@ -44,62 +44,30 @@
         (SELECT
         <include refid="Base_Column_List"/>
         FROM STRESS WHERE
-        MINECODE =#{customDB,jdbcType=VARCHAR} ORDER BY COLLECTIONTIME ) WHERE ROWNUM <![CDATA[ <= ]]>1000
-    </select>
-
-    <!-- 根据去重的标志获取Top表所需测点 -->
-    <select id="getDistinctPoint" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        from STRESS WHERE MINECODE = #{customDB,jdbcType=VARCHAR} AND
-        TUNNELNAME=#{tunnelName,jdbcType=VARCHAR}
-        AND DEPTH=#{depth,jdbcType=FLOAT} AND DISTANCE=#{distance,jdbcType=FLOAT}
-        AND ROWNUM=1 ORDER BY 'COLLECTIONTIME' DESC
-    </select>
-
-    <!-- 获取STRESS和Quake表中所有的AreaName -->
-    <select id="getAllAreaName" resultType="java.lang.String">
-        SELECT AREANAME
-        FROM (SELECT DISTINCT AREANAME
-              FROM STRESS
-              WHERE MINECODE
-                        = #{mineCode,jdbcType=VARCHAR}
-              ORDER BY 'COLLECTIONTIME' DESC)
-        WHERE ROWNUM &lt;= 1000
-        UNION
-        SELECT AREANAME
-        FROM (SELECT DISTINCT AREANAME
-              FROM QUAKE
-              WHERE MINECODE
-                        = #{mineCode,jdbcType=VARCHAR}
-              ORDER BY 'COLLECTIONTIME' DESC)
-        WHERE ROWNUM &lt;= 1000
+        MINECODE = #{customDB} ORDER BY COLLECTIONTIME ) WHERE ROWNUM <![CDATA[ <= ]]> 1000
     </select>
 
     <!-- 批量删除 -->
     <delete id="deleteGroupData" parameterType="java.util.List">
         DELETE FROM STRESS WHERE "ID" in
-        <foreach item="item" collection="list" open="(" close=")"
-                 separator=",">
+        <foreach item="item" collection="list" open="(" close=")" separator=",">
             (#{item.id,jdbcType=DECIMAL})
         </foreach>
-    </delete>
-
-    <delete id="deleteByTimeLessThan">
-        DELETE
-        FROM STRESS
-        WHERE COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
-    </delete>
-    <delete id="deleteByMineCodeAndTimeLessThan">
-        DELETE
-        FROM STRESS
-        WHERE MINECODE = #{mineCode, jdbcType=VARCHAR}
-          AND COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
     </delete>
 
     <select id="stressCount" resultType="java.lang.Integer">
         SELECT COUNT(1)
         FROM STRESS
+    </select>
+    <select id="readJustByTime" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        (SELECT
+        <include refid="Base_Column_List"/>
+        FROM STRESS WHERE COLLECTIONTIME &gt;= to_date(#{time}, 'yyyy-mm-dd hh24:mi:ss') ORDER BY COLLECTIONTIME )
+        WHERE
+        ROWNUM <![CDATA[ <= ]]> 1000
     </select>
 
 </mapper>

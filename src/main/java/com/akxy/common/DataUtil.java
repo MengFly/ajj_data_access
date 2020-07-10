@@ -153,7 +153,7 @@ public class DataUtil {
                 stressDataInfo.setZfIndex(ParseUtil.numberDigist(zf, 4));
             }
         } catch (Exception e) {
-            log.info("{},{} EXCEPTION=>{}", customDb, stress, e);
+            log.error("处理应力错误{}", e.getMessage());
             return null;
         }
         return stressDataInfo;
@@ -265,12 +265,11 @@ public class DataUtil {
         DynamicDataSourceContextHolder.setDataSource(customDb);
         if (!needInsertTopInfos.isEmpty()) {
             int insertCount = stressTopDataInfoMapper.insertGroupData(new ArrayList<>(needInsertTopInfos.values()));
-            log.info(">> [{}] 应力Top需新增({})条，成功新增({})条", customDb, needInsertTopInfos.size(), insertCount);
+            log.info(">> 应力Top需新增({})条，成功新增({})条", needInsertTopInfos.size(), insertCount);
         }
         if (!needUpdateTopInfos.isEmpty()) {
-            needUpdateTopInfos.values().forEach(stressTopDataInfo ->
-                    stressTopDataInfoMapper.updateTopData(stressTopDataInfo));
-            log.info(">> [{}] 应力Top更新({}) 条", customDb, needUpdateTopInfos.size());
+            stressTopDataInfoMapper.updateTopData(new ArrayList<>(needUpdateTopInfos.values()));
+            log.info(">> 应力Top更新({}) 条", needUpdateTopInfos.size());
         }
 
     }
@@ -357,3 +356,5 @@ public class DataUtil {
 
 
 }
+
+

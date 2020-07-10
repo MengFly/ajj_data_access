@@ -32,9 +32,9 @@
         SINGLE_INDEX
     </sql>
 
-    <!-- 批量插入STRESS_DATAINFO数据 -->
+    <!-- 批量插入STRESS_DATAINFO数据, 这里存入到STRESS_DATAINFO_LASTWEEK表中，提升存入数据的速度 -->
     <insert id="insertGroupDataInfo" parameterType="java.util.List">
-        insert into STRESS_DATAINFO
+        insert into STRESS_TEMP
         (ACQUISITION_TIME,MP_NAME,AREA_ID,P_VALUE,X,Y,Z,WARN_STATUS,RED_VALUE,YELLOW_VALUE,
         DISTANCE,DEPTH,MEMO,MP_ID)
         <foreach collection="list" item="item" index="index" open="(" separator="union" close=")">
@@ -57,43 +57,5 @@
             dual
         </foreach>
     </insert>
-    <update id="updateAreaIdByMpId">
-        UPDATE STRESS_DATAINFO
-        SET AREA_ID = #{areaId, jdbcType=DECIMAL}
-        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
-          AND AREA_ID &lt;&gt; #{areaId, jdbcType=DECIMAL}
-    </update>
-    <update id="updateMpNameByMpId">
-        UPDATE STRESS_DATAINFO
-        SET MP_NAME = #{mpName, jdbcType=VARCHAR}
-        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
-          AND MP_NAME &lt;&gt; #{mpName, jdbcType=VARCHAR}
-    </update>
-
-    <!-- 获取最新一天的StressDataInfo信息 -->
-    <select id="getDataInfoCache" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM
-        (SELECT
-        <include refid="Base_Column_List"/>
-        FROM STRESS_DATAINFO ORDER BY ACQUISITION_TIME DESC)
-        WHERE ROWNUM &lt;= 1000
-    </select>
-    <select id="findMaxAcquisitionTime" resultType="java.sql.Timestamp">
-        SELECT MAX(ACQUISITION_TIME)
-        FROM STRESS_DATAINFO
-    </select>
-    <select id="findMaxAcquisitionTimeBy" resultType="java.sql.Timestamp">
-        SELECT MAX(ACQUISITION_TIME)
-        FROM STRESS_DATAINFO
-        WHERE AREA_ID = #{areaId,jdbcType = DECIMAL}
-          AND MP_ID = #{mpId, jdbcType = DECIMAL}
-    </select>
-    <select id="countBy" resultType="java.lang.Integer">
-        SELECT COUNT(*)
-        FROM STRESS_DATAINFO
-        WHERE MP_ID = #{mpId, jdbcType=DECIMAL}
-    </select>
 
 </mapper>

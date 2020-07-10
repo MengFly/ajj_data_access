@@ -86,16 +86,18 @@
         <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
             update STRESS_MEASUREPOINT p
             set
-            p.TO_TIME=#{item.toTime,jdbcType=TIMESTAMP}
-            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.TO_TIME &lt; #{item.toTime,jdbcType=TIMESTAMP}
+            p.TO_TIME=to_date(#{item.toTime}, 'yyyy-mm-dd hh24:mi:ss'),
+            p.NAME = #{item.name}
+            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.TO_TIME &lt; to_date(#{item.toTime}, 'yyyy-mm-dd hh24:mi:ss')
         </foreach>
     </update>
     <update id="updateFromTime" parameterType="java.util.List">
         <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";">
             update STRESS_MEASUREPOINT p
             set
-            p.FROM_TIME=#{item.fromTime,jdbcType=TIMESTAMP}
-            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.FROM_TIME &gt; #{item.fromTime,jdbcType=TIMESTAMP}
+            p.FROM_TIME=to_date(#{item.fromTime}, 'yyyy-mm-dd hh24:mi:ss')
+            where p."ID"=#{item.id,jdbcType=DECIMAL} AND p.FROM_TIME &gt; to_date(#{item.fromTime}, 'yyyy-mm-dd
+            hh24:mi:ss')
         </foreach>
     </update>
     <update id="updateMpName" parameterType="java.util.List">

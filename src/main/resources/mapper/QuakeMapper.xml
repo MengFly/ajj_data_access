@@ -53,12 +53,6 @@
         </foreach>
     </delete>
 
-    <delete id="deleteByTimeLessThan">
-        DELETE
-        FROM QUAKE
-        WHERE COLLECTIONTIME &lt; #{time, jdbcType=TIMESTAMP}
-    </delete>
-
     <select id="quakeCount" resultType="java.lang.Integer">
         SELECT COUNT(1)
         FROM QUAKE
