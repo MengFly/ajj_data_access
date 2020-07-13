@@ -25,5 +25,5 @@ public interface StressMapper {
 
     Integer stressCount();
 
-    List<Stress> readJustByTime(@Param("time") String formatDate);
+    List<Stress> readJustByTime(@Param("time") String formatDate, @Param("count") int readStressCount);
 }

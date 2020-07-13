@@ -10,6 +10,7 @@ import com.akxy.service.ILocalCacheService;
 import com.akxy.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,6 +45,11 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     @Autowired
     private MineMapper mineMapper;
 
+    @Value("${custom.datasource.names}")
+    public String customDbs;
+
+    public int readStressCount = -1;
+
     @Override
     public void prepareMidCache(String primaryDb, String mineDb) {
         // 中间库数据库
@@ -62,13 +68,36 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
         DynamicDataSourceContextHolder.restoreDataSource();
     }
 
+    /**
+     * 读取矿区应力数据
+     *
+     * @param mineDb MineCode
+     * @return 应力数据
+     */
     private List<Stress> readStressData(String mineDb) {
+        // initReadStressCount, count need between 1000 and 4000
+        if (readStressCount == -1) {
+            if (customDbs != null) {
+                readStressCount = Math.max((customDbs.split(",").length - 2) * 1000, 1000);
+                readStressCount = Math.min(4000, readStressCount);
+            } else {
+                readStressCount = 1000;
+            }
+            log.info("init readStressCount ==> {}", readStressCount);
+        }
+
         List<Stress> resultStress;
 
         Long midCost = midStressReadCost.getOrDefault(mineDb, null);
         Date maxTime = midStressMinDate.getOrDefault(mineDb, null);
-        // 如果是第一次读取或者是读取时间小于40秒，或者有十分之一的概率使用初始版本的读取
-        int lucky = new Random().nextInt(10);
+        // 假设快速读取的平均速度为5秒一次，那么要保证平均的处理速度在30秒一次
+        int lucky;
+        if (midCost == null) {
+            lucky = 0;
+        } else {
+            // 计算方式 lastReadCost:midCost / (Except:30 - mean(fastRead):5)
+            lucky = new Random().nextInt(1 + (int) (midCost / 25));
+        }
 
         long start = System.currentTimeMillis();
         if (midCost == null || midCost < TimeUnit.SECONDS.toMillis(30) || lucky < 1) {
@@ -83,12 +112,15 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
             log.info("try use normal get stress data, cost => {}", cost);
             midStressReadCost.put(mineDb, cost);
         } else {
-            List<Stress> allTimeStress = stressMapper.readJustByTime(DateUtil.formatDate(maxTime.getTime()));
+            List<Stress> allTimeStress = stressMapper.readJustByTime(DateUtil.formatDate(maxTime.getTime()), readStressCount);
             resultStress = allTimeStress.stream()
                     .filter(stress -> Objects.equals(stress.getMinecode(), mineDb))
                     .collect(Collectors.toList());
-            // 如果不是空，筛选当前矿的数据
+            // 如果不是空，筛选当前矿的数据,Oracle最多处理1000条数据
             if (!resultStress.isEmpty()) {
+                if (resultStress.size() > 1000) {
+                    resultStress = resultStress.subList(0, 1000);
+                }
                 Stress maxTimeStress = resultStress.stream().max(Comparator.comparing(Stress::getCollectiontime)).get();
                 midStressMinDate.put(mineDb, maxTimeStress.getCollectiontime());
             } else {// 如果是空，用所有数据中最大的

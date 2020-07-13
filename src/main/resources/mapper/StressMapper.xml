@@ -67,7 +67,7 @@
         <include refid="Base_Column_List"/>
         FROM STRESS WHERE COLLECTIONTIME &gt;= to_date(#{time}, 'yyyy-mm-dd hh24:mi:ss') ORDER BY COLLECTIONTIME )
         WHERE
-        ROWNUM <![CDATA[ <= ]]> 1000
+        ROWNUM <![CDATA[ <= ]]> #{count}
     </select>
 
 </mapper>
