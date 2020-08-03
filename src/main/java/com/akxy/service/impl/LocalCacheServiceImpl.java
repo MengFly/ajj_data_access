@@ -8,6 +8,7 @@ import com.akxy.mapper.QuakeMapper;
 import com.akxy.mapper.StressMapper;
 import com.akxy.service.ILocalCacheService;
 import com.akxy.util.DateUtil;
+import com.akxy.util.StressUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,14 +55,16 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     public void prepareMidCache(String primaryDb, String mineDb) {
         // 中间库数据库
         DynamicDataSourceContextHolder.setDataSource(primaryDb);
-        // 1000 条应力数据
         List<Stress> stressList = readStressData(mineDb);
         midDataBaseCache.put("STRESS" + mineDb, stressList);
         // 1000 条微震信息
         List<Quake> quakeList = quakeMapper.readQuakeData(mineDb);
         midDataBaseCache.put("QUAKE" + mineDb, quakeList);
-        // 应力数据中包含的工作面信息
-        Set<String> areaList = stressList.stream().map(Stress::getAreaname).parallel().collect(Collectors.toSet());
+        // 应力数据中包含的工作面信息,由于后面会筛选应力数据，所以这里分析工作面的时候也应该保持同样的逻辑
+        Set<String> areaList = stressList.stream()
+                .parallel()
+                .filter(StressUtil::needSave)
+                .map(Stress::getAreaname).collect(Collectors.toSet());
         areaList.addAll(quakeList.stream().map(Quake::getAreaname).parallel().distinct().collect(Collectors.toList()));
 
         midDataBaseCache.put("AREANAME" + mineDb, new ArrayList<>(areaList));
@@ -69,13 +72,24 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
     }
 
     /**
-     * 读取矿区应力数据
+     * 读取矿区应力数据,由于在中间库数据的数量比较多的时候根据矿名查询会比较慢，因此，这里提供了一种根据时间读取代码筛选的逻辑
+     * <p>
+     * 1. 最开始使用根据矿名读取的逻辑
+     * <p>
+     * 2. 如果根据矿名读取并不耗时（30s）的话，继续使用根据矿名读取
+     * <p>
+     * 3. 如果根据矿名读取非常耗时（≥30s)的话，尝试根据第一次根据矿名读取的时候获取的时间进行时间读取
+     * <p>
+     * 4. 将根据时间读取的数据按照矿名进行筛选
+     * <p>
+     * 5. 每次循环结束后，第二次执行的时候依然会有机会根据矿名查询，原因是根据矿名读取没有冗余数据，
+     * 在数据处理一定的程度后有可能根据矿名已经不再慢。这个机会不应该拖慢读取速度，需要根据上一次的根据矿名读取的速度来动态调整
      *
      * @param mineDb MineCode
      * @return 应力数据
      */
     private List<Stress> readStressData(String mineDb) {
-        // initReadStressCount, count need between 1000 and 4000
+        // init readStressCount, count need between 1000 and 4000
         if (readStressCount == -1) {
             if (customDbs != null) {
                 readStressCount = Math.max((customDbs.split(",").length - 2) * 1000, 1000);
@@ -85,9 +99,6 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
             }
             log.info("init readStressCount ==> {}", readStressCount);
         }
-
-        List<Stress> resultStress;
-
         Long midCost = midStressReadCost.getOrDefault(mineDb, null);
         Date maxTime = midStressMinDate.getOrDefault(mineDb, null);
         // 假设快速读取的平均速度为5秒一次，那么要保证平均的处理速度在30秒一次
@@ -98,10 +109,9 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
             // 计算方式 lastReadCost:midCost / (Except:30 - mean(fastRead):5)
             lucky = new Random().nextInt(1 + (int) (midCost / 25));
         }
-
+        List<Stress> resultStress;
         long start = System.currentTimeMillis();
-        if (midCost == null || midCost < TimeUnit.SECONDS.toMillis(30) || lucky < 1) {
-            boolean usedNormalQuery = true;
+        if (midCost == null || maxTime == null || midCost < TimeUnit.SECONDS.toMillis(30) || lucky < 1) {
             resultStress = stressMapper.readStressData(mineDb);
             // cost, 如果是空，说明没有数据
             if (!resultStress.isEmpty()) {

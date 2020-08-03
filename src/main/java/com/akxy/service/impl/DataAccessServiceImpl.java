@@ -10,6 +10,7 @@ import com.akxy.service.ILocalCacheService;
 import com.akxy.util.AreaUtil;
 import com.akxy.util.DateUtil;
 import com.akxy.util.ParseUtil;
+import com.akxy.util.StressUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,8 +123,7 @@ public class DataAccessServiceImpl implements IDataAccessService {
 
     private List<StressDataInfo> saveStressHistoryData(String customDb, List<StressDataInfo> stressDataInfos) {
         // 空值和应力值小于30的才进行存储
-        List<StressDataInfo> stressInfos = stressDataInfos.stream()
-                .filter(info -> info.getPValue() <= 30 && info.getAcquisitionTime() != null).collect(Collectors.toList());
+        List<StressDataInfo> stressInfos = stressDataInfos.stream().filter(StressUtil::needSave).collect(Collectors.toList());
 
         if (stressInfos.isEmpty()) {
             log.info(">> 无符合的应力历史数据需要存储");
@@ -412,10 +412,5 @@ public class DataAccessServiceImpl implements IDataAccessService {
             }
 
         }
-    }
-
-    @Override
-    public boolean hasNeedAnalysisData() {
-        return stressMapper.stressCount() != 0 || quakeMapper.quakeCount() != 0;
     }
 }

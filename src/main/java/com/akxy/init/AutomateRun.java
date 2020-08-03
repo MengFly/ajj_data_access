@@ -118,7 +118,7 @@ public class AutomateRun implements ApplicationRunner {
             }
         } finally {
             iDataAccessService.writeToPlatform(primaryDb, mineCode);
-            // 中间库的缓存信息在所有矿区都分析结束的时候就没有用了，删除掉即可
+//             中间库的缓存信息在所有矿区都分析结束的时候就没有用了，删除掉即可
             localCacheService.restoreMineCache(mineCode);
             sleep(TimeUnit.SECONDS, 10);
         }
@@ -150,4 +150,3 @@ public class AutomateRun implements ApplicationRunner {
         timeUnit.sleep(num);
     }
 }
-

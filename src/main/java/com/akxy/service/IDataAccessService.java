@@ -32,6 +32,4 @@ public interface IDataAccessService {
      * 写入PLATFORM连接状态表
      */
     void writeToPlatform(String primaryDb, String customDb);
-
-    boolean hasNeedAnalysisData();
 }
