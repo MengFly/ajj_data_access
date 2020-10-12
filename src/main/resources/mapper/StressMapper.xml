@@ -43,13 +43,13 @@
         FROM
         (SELECT
         <include refid="Base_Column_List"/>
-        FROM STRESS_NEW WHERE
+        FROM STRESS WHERE
         MINECODE = #{customDB} ORDER BY COLLECTIONTIME ) WHERE ROWNUM <![CDATA[ <= ]]> 1000
     </select>
 
     <!-- 批量删除 -->
     <delete id="deleteGroupData" parameterType="java.util.List">
-        DELETE FROM STRESS_NEW WHERE "ID" in
+        DELETE FROM STRESS WHERE "ID" in
         <foreach item="item" collection="list" open="(" close=")" separator=",">
             (#{item.id,jdbcType=DECIMAL})
         </foreach>
@@ -57,7 +57,7 @@
 
     <select id="stressCount" resultType="java.lang.Integer">
         SELECT COUNT(1)
-        FROM STRESS_NEW
+        FROM STRESS
     </select>
     <select id="readJustByTime" resultMap="BaseResultMap">
         SELECT
@@ -65,7 +65,7 @@
         FROM
         (SELECT
         <include refid="Base_Column_List"/>
-        FROM STRESS_NEW WHERE COLLECTIONTIME &gt;= to_date(#{time}, 'yyyy-mm-dd hh24:mi:ss') ORDER BY COLLECTIONTIME )
+        FROM STRESS WHERE COLLECTIONTIME &gt;= to_date(#{time}, 'yyyy-mm-dd hh24:mi:ss') ORDER BY COLLECTIONTIME )
         WHERE
         ROWNUM <![CDATA[ <= ]]> #{count}
     </select>

@@ -104,6 +104,7 @@ public class AutomateRun implements ApplicationRunner {
         localCacheService.prepareMidCache(primaryDb, mineCode);
         List<Stress> midStressCache = localCacheService.getMidStressCache(mineCode);
         List<Quake> midQuakeCache = localCacheService.getMidQuakeCache(mineCode);
+        int selectCount = midQuakeCache.size() + midStressCache.size();
         try {
             if (midStressCache.isEmpty() && midQuakeCache.isEmpty()) {
                 log.info(">> 无数据");
@@ -114,13 +115,14 @@ public class AutomateRun implements ApplicationRunner {
                 iDataAccessService.writeNotExistsMeasurePoint(mineCode);
                 iDataAccessService.readAndCalculateStress(primaryDb, mineCode);
                 iDataAccessService.readAndCalculateQuake(primaryDb, mineCode);
-                sleep(TimeUnit.SECONDS, TIME_INTERVAL_SECOND / 6);
             }
         } finally {
             iDataAccessService.writeToPlatform(primaryDb, mineCode);
 //             中间库的缓存信息在所有矿区都分析结束的时候就没有用了，删除掉即可
             localCacheService.restoreMineCache(mineCode);
-            sleep(TimeUnit.SECONDS, 10);
+            if (selectCount < 500) {
+                sleep(TimeUnit.SECONDS, 10);
+            }
         }
     }
 
