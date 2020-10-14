@@ -36,38 +36,26 @@
         "DISTANCE", INITIALVALUE, REDWARN, YELLOWWARN, WARNRECORD, "MEMO"
     </sql>
 
-    <!-- 从中间库读取Stress数据 WHERE ROWNUM <![CDATA[ <= ]]> 1000 -->
-    <select id="readStressData" resultMap="BaseResultMap">
+    <select id="readByRowNumTimeAsc" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
-        (SELECT
+        ( SELECT ROWNUM AS NO,
         <include refid="Base_Column_List"/>
-        FROM STRESS WHERE
-        MINECODE = #{customDB} ORDER BY COLLECTIONTIME ) WHERE ROWNUM <![CDATA[ <= ]]> 1000
+        FROM
+        ( SELECT
+        <include refid="Base_Column_List"/>
+        FROM STRESS_NEW ORDER BY COLLECTIONTIME ) A ) B
+        WHERE B. NO BETWEEN #{rowNum} AND #{rowNumEnd}
     </select>
 
     <!-- 批量删除 -->
     <delete id="deleteGroupData" parameterType="java.util.List">
-        DELETE FROM STRESS WHERE "ID" in
+        DELETE FROM STRESS_NEW WHERE "ID" in
         <foreach item="item" collection="list" open="(" close=")" separator=",">
             (#{item.id,jdbcType=DECIMAL})
         </foreach>
     </delete>
 
-    <select id="stressCount" resultType="java.lang.Integer">
-        SELECT COUNT(1)
-        FROM STRESS
-    </select>
-    <select id="readJustByTime" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM
-        (SELECT
-        <include refid="Base_Column_List"/>
-        FROM STRESS WHERE COLLECTIONTIME &gt;= to_date(#{time}, 'yyyy-mm-dd hh24:mi:ss') ORDER BY COLLECTIONTIME )
-        WHERE
-        ROWNUM <![CDATA[ <= ]]> #{count}
-    </select>
 
 </mapper>

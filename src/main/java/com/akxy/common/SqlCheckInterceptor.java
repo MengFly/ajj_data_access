@@ -30,7 +30,7 @@ public class SqlCheckInterceptor implements Interceptor {
     /**
      * 超时警告时间临界值，超过这个时间的Sql将会被打印警告
      */
-    private static final int LIMIT_QUERY_TIME = 5000;
+    private static final int LIMIT_QUERY_TIME = 10000;
     /**
      * 返回长度警告临界值，超过这个长度的Sql将会被打印警告
      */

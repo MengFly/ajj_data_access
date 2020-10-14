@@ -1,5 +1,6 @@
 package com.akxy.init;
 
+import com.akxy.DataAccessApplication;
 import com.akxy.entity.Quake;
 import com.akxy.entity.Stress;
 import com.akxy.mapper.MineMapper;
@@ -17,10 +18,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -70,10 +68,10 @@ public class AutomateRun implements ApplicationRunner {
         List<String> childMines = Arrays.stream(customDbs.split(",")).filter(
                 s -> !"copy".equals(s) && !"1000".equals(s)
         ).collect(Collectors.toList());
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        localCacheService.startGetDataThread(childMines);
         for (String childMine : childMines) {
             String mineName = ParseUtil.getOrDefault(mineMapper.findNameByCode(childMine), "UnKnown");
-            executorService.execute(getCalculateRunnable(childMine, mineName));
+            DataAccessApplication.execute(getCalculateRunnable(childMine, mineName));
         }
     }
 
@@ -102,19 +100,20 @@ public class AutomateRun implements ApplicationRunner {
      */
     public void readAndCalculate(String mineCode) {
         localCacheService.prepareMidCache(primaryDb, mineCode);
-        List<Stress> midStressCache = localCacheService.getMidStressCache(mineCode);
-        List<Quake> midQuakeCache = localCacheService.getMidQuakeCache(mineCode);
-        int selectCount = midQuakeCache.size() + midStressCache.size();
+        List<Stress> stresses = localCacheService.getMineStress(mineCode);
+        List<Quake> quakes = localCacheService.getMidQuakeCache(mineCode);
+        int selectCount = quakes.size() + stresses.size();
         try {
-            if (midStressCache.isEmpty() && midQuakeCache.isEmpty()) {
+            if (stresses.isEmpty() && quakes.isEmpty()) {
                 log.info(">> 无数据");
                 sleep(TimeUnit.SECONDS, TIME_INTERVAL_SECOND);
             } else {
-                log.info(">> 查询到 -> 应力({})条，微震({})条", midStressCache.size(), midQuakeCache.size());
-                iDataAccessService.configArea(primaryDb, mineCode);
-                iDataAccessService.writeNotExistsMeasurePoint(mineCode);
-                iDataAccessService.readAndCalculateStress(primaryDb, mineCode);
-                iDataAccessService.readAndCalculateQuake(primaryDb, mineCode);
+                log.info(">> 查询到 -> 应力({})条，微震({})条", stresses.size(), quakes.size());
+                Set<String> areaNames = getAreaNames(quakes, stresses);
+                iDataAccessService.configArea(primaryDb, mineCode, areaNames);
+                iDataAccessService.writeNotExistsMeasurePoint(mineCode, stresses);
+                iDataAccessService.readAndCalculateStress(primaryDb, mineCode, stresses);
+                iDataAccessService.readAndCalculateQuake(primaryDb, mineCode, quakes);
             }
         } finally {
             iDataAccessService.writeToPlatform(primaryDb, mineCode);
@@ -124,6 +123,12 @@ public class AutomateRun implements ApplicationRunner {
                 sleep(TimeUnit.SECONDS, 10);
             }
         }
+    }
+
+    private Set<String> getAreaNames(List<Quake> midQuakeCache, List<Stress> midStressCache) {
+        Set<String> areaNames = midQuakeCache.stream().parallel().map(Quake::getAreaname).collect(Collectors.toSet());
+        areaNames.addAll(midStressCache.stream().parallel().map(Stress::getAreaname).collect(Collectors.toSet()));
+        return areaNames;
     }
 
     /**

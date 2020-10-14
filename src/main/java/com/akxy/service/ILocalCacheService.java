@@ -19,18 +19,13 @@ public interface ILocalCacheService {
     void restoreMineCache(String mineCode);
 
     /**
-     * 获取中间库缓存的应力信息
-     */
-    List<Stress> getMidStressCache(String mineDb);
-
-    /**
      * 获取中间库缓存的微震信息
      */
     List<Quake> getMidQuakeCache(String mineDb);
 
-    /**
-     * 获取中间库缓存的工作面名称信息
-     */
-    List<String> getMidAreaNameCache(String mineDb);
+    void minusRowNum(int rowNum);
 
+    void startGetDataThread(List<String> mines);
+
+    List<Stress> getMineStress(String mineCode);
 }
