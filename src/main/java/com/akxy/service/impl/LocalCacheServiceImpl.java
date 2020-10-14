@@ -134,7 +134,7 @@ public class LocalCacheServiceImpl implements ILocalCacheService {
                 Stress maxTimeStress = resultStress.stream().max(Comparator.comparing(Stress::getCollectiontime)).get();
                 midStressMinDate.put(mineDb, maxTimeStress.getCollectiontime());
             } else {// 如果是空，下一次分析使用normal
-                midStressMinDate.put(mineDb, null);
+                midStressMinDate.remove(mineDb);
             }
             log.info("try use fast get stress data, cost => {}", (System.currentTimeMillis() - start));
         }
